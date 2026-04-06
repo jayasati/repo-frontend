@@ -5,6 +5,8 @@ import { useRouter }  from 'next/navigation'
 import { toast }      from 'sonner'
 import { Button }     from '@/components/ui/button'
 import { useAnalysisStore } from '@/features/analysis/store/analysis.store'
+import { normalizeGithubRepoUrl } from '@/lib/repo-url'
+import { setLastAnalyzedRepo } from '@/lib/last-analyzed-repo'
 
 const QUICK_PICKS = [
   'https://github.com/nestjs/nest',
@@ -31,16 +33,8 @@ export function UrlScanner() {
   const [rawInput,     setRawInput]     = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function normalise(raw: string): string | null {
-    const trimmed = raw.trim()
-    if (!trimmed) return null
-    if (trimmed.startsWith('https://github.com/')) return trimmed
-    if (/^[\w.-]+\/[\w.-]+$/.test(trimmed)) return `https://github.com/${trimmed}`
-    return null
-  }
-
   const handleSubmit = async (overrideUrl?: string) => {
-    const source = normalise(overrideUrl ?? rawInput)
+    const source = normalizeGithubRepoUrl(overrideUrl ?? rawInput)
     if (!source) {
       toast.error('Enter a GitHub URL or owner/repo path')
       return
@@ -61,6 +55,7 @@ export function UrlScanner() {
       }
 
       const { jobId } = await res.json() as { jobId: string }
+      setLastAnalyzedRepo(source)
       setCurrentJobId(jobId)
       router.push(`/analyze/${jobId}`)
     } catch {

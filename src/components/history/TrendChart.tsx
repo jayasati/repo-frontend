@@ -8,6 +8,7 @@ import type { TrendReport, TrendPoint } from '@/types/history.types'
 
 interface TrendChartProps {
   repoUrl: string
+  limit: number
 }
 
 const trendColor = {
@@ -38,21 +39,54 @@ function buildPolyline(points: TrendPoint[], width = 300, height = 60, padding =
   }).join(' ')
 }
 
-export function TrendChart({ repoUrl }: TrendChartProps) {
+function pointToCoords(
+  point: TrendPoint,
+  index: number,
+  points: TrendPoint[],
+  width = 300,
+  height = 60,
+  padding = 6,
+): { x: number; y: number } {
+  if (points.length <= 1) {
+    return { x: width / 2, y: height / 2 };
+  }
+  const scores = points.map((p) => p.overallScore);
+  const min = Math.min(...scores);
+  const max = Math.max(...scores);
+  const range = max - min || 1;
+  const xStep = (width - padding * 2) / (points.length - 1);
+  const x = padding + index * xStep;
+  const y = padding + (1 - (point.overallScore - min) / range) * (height - padding * 2);
+  return { x, y };
+}
+
+export function TrendChart({ repoUrl, limit }: TrendChartProps) {
   const [report,    setReport]    = useState<TrendReport | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error,     setError]     = useState<string | null>(null)
+  const [refreshTick, setRefreshTick] = useState(0)
 
   useEffect(() => {
     if (!repoUrl) return
     setIsLoading(true)
     setError(null)
 
-    fetch(`/api/history/trend?repoUrl=${encodeURIComponent(repoUrl)}&limit=30`)
+    fetch(`/api/history/trend?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`)
       .then((r) => r.ok ? r.json() : r.json().then((b: {message?: string}) => Promise.reject(b.message ?? 'Failed')))
       .then((d: TrendReport) => setReport(d))
       .catch((e: unknown) => setError(String(e)))
       .finally(() => setIsLoading(false))
+  }, [repoUrl, limit, refreshTick])
+
+  useEffect(() => {
+    if (!repoUrl) return
+    const onFocus = () => setRefreshTick((n) => n + 1)
+    const timer = window.setInterval(() => setRefreshTick((n) => n + 1), 8000)
+    window.addEventListener('focus', onFocus)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      window.clearInterval(timer)
+    }
   }, [repoUrl])
 
   if (isLoading) return (
@@ -63,11 +97,15 @@ export function TrendChart({ repoUrl }: TrendChartProps) {
 
   if (error) return <div className="font-mono text-[12px] text-ra-red py-4">{error}</div>
 
-  if (!report || report.points.length === 0) return (
+  if (!report || report.points.length < 2) return (
     <EmptyState message="Not enough history to show a trend yet. Analyze this repo a few more times." />
   )
 
   const polyline = buildPolyline(report.points)
+  const firstScore = report.points[0]?.overallScore ?? 0
+  const lastScore = report.points.at(-1)?.overallScore ?? 0
+  const deltaScore = lastScore - firstScore
+  const scores = report.points.map((p) => p.overallScore)
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -87,6 +125,9 @@ export function TrendChart({ repoUrl }: TrendChartProps) {
         </span>
         <span className="font-mono text-[11px] text-text-dim">
           {report.points.length} analyses
+        </span>
+        <span className="font-mono text-[11px] text-text-dim">
+          delta <span className={cn(deltaScore >= 0 ? 'text-accent' : 'text-ra-red')}>{deltaScore >= 0 ? '+' : ''}{deltaScore}</span>
         </span>
       </div>
 
@@ -123,22 +164,19 @@ export function TrendChart({ repoUrl }: TrendChartProps) {
 
           {/* Dots — only show first, last, best, worst */}
           {report.points.map((p, i) => {
-            const scores  = report.points.map((pp) => pp.overallScore)
             const isFirst = i === 0
             const isLast  = i === report.points.length - 1
             const isBest  = p.overallScore === Math.max(...scores)
             const isWorst = p.overallScore === Math.min(...scores)
             if (!isFirst && !isLast && !isBest && !isWorst) return null
 
-            const coords = buildPolyline([p], 300, 60)
-            const [cx, cy] = coords.split(',').map(Number)
-            if (!cx || !cy) return null
+            const coords = pointToCoords(p, i, report.points)
 
             return (
               <circle
                 key={i}
-                cx={cx}
-                cy={cy}
+                cx={coords.x}
+                cy={coords.y}
                 r="2.5"
                 fill={isBest ? '#A3E635' : isWorst ? '#F87171' : '#71717A'}
               />

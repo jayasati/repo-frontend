@@ -1,20 +1,21 @@
 'use client'
 
-import { useState }          from 'react'
+import { useEffect, useState } from 'react'
 import { GitBranch }         from 'lucide-react'
 import { HistoryList }       from '@/components/history/HistoryList'
 import { DiffView }          from '@/components/history/DiffView'
 import type { HistoryEntry } from '@/types/history.types'
+import { normalizeGithubRepoUrl } from '@/lib/repo-url'
+import { getLastAnalyzedRepo } from '@/lib/last-analyzed-repo'
 
 export default function HistoryPage() {
   const [repoUrl,  setRepoUrl]  = useState('')
   const [input,    setInput]    = useState('')
   const [selected, setSelected] = useState<HistoryEntry[]>([])
+  const [limit,    setLimit]    = useState(20)
 
   const handleSearch = () => {
-    const url = input.trim().startsWith('http')
-      ? input.trim()
-      : input.trim() ? `https://github.com/${input.trim()}` : ''
+    const url = normalizeGithubRepoUrl(input)
     if (!url) return
     setRepoUrl(url)
     setSelected([])
@@ -29,6 +30,13 @@ export default function HistoryPage() {
   }
 
   const canDiff = selected.length === 2
+
+  useEffect(() => {
+    const lastRepo = getLastAnalyzedRepo()
+    if (!lastRepo) return
+    setInput(lastRepo)
+    setRepoUrl(lastRepo)
+  }, [])
 
   return (
     <div className="p-6 max-w-5xl animate-fade-in">
@@ -60,12 +68,22 @@ export default function HistoryPage() {
         >
           Load →
         </button>
+        <select
+          value={limit}
+          onChange={(e) => setLimit(Number(e.target.value))}
+          className="px-2.5 py-2.5 rounded-lg border border-border bg-bg-surface font-mono text-[12px] text-text"
+          aria-label="History result limit"
+        >
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
       </div>
 
       <div className={canDiff ? 'grid grid-cols-[1fr_340px] gap-5' : 'block'}>
         <div>
           {repoUrl
-            ? <HistoryList repoUrl={repoUrl} onSelectForDiff={handleSelectForDiff} selected={selected} />
+            ? <HistoryList repoUrl={repoUrl} limit={limit} onSelectForDiff={handleSelectForDiff} selected={selected} />
             : (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                 <GitBranch className="h-8 w-8 text-text-dim" />

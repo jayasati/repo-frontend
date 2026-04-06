@@ -11,6 +11,7 @@ import { Spinner }                from '@/components/ui/spinner'
 import { useGitHubRepos }         from '@/hooks/useGitHubRepos'
 import { useAnalysisStore }       from '@/features/analysis/store/analysis.store'
 import type { GitHubRepo }        from '@/types/analysis.types'
+import { setLastAnalyzedRepo }    from '@/lib/last-analyzed-repo'
 
 /**
  * GitHubRepoSelector — renders when the user has connected their GitHub account.
@@ -82,6 +83,7 @@ export function GitHubRepoSelector() {
       }
 
       const { jobId } = await res.json() as { jobId: string }
+      setLastAnalyzedRepo(selected.html_url)
       setCurrentJobId(jobId)
       router.push(`/analyze/${jobId}`)
     } catch {

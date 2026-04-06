@@ -7,6 +7,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useGitHubRepos } from '@/hooks/useGitHubRepos'
 import type { GitHubRepo } from '@/types/analysis.types'
 import { nestGithubOAuthStartUrl } from '@/lib/constants/nest-api'
+import { setLastAnalyzedRepo } from '@/lib/last-analyzed-repo'
 
 export default function RepositoriesPage() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export default function RepositoriesPage() {
     if (!res.ok) return
 
     const { jobId } = (await res.json()) as { jobId: string }
+    setLastAnalyzedRepo(repo.html_url)
     router.push(`/analyze/${jobId}`)
   }
 

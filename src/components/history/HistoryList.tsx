@@ -10,6 +10,7 @@ import type { HistoryEntry }   from '@/types/history.types'
 
 interface HistoryListProps {
   repoUrl:         string
+  limit:           number
   onSelectForDiff: (entry: HistoryEntry) => void
   selected:        HistoryEntry[]
 }
@@ -25,21 +26,33 @@ function scoreBg(n: number) {
   return 'bg-ra-red-dim'
 }
 
-export function HistoryList({ repoUrl, onSelectForDiff, selected }: HistoryListProps) {
+export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: HistoryListProps) {
   const [entries,   setEntries]   = useState<HistoryEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error,     setError]     = useState<string | null>(null)
+  const [refreshTick, setRefreshTick] = useState(0)
 
   useEffect(() => {
     if (!repoUrl) return
     setIsLoading(true)
     setError(null)
 
-    fetch(`/api/history?repoUrl=${encodeURIComponent(repoUrl)}&limit=20`)
+    fetch(`/api/history?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`)
       .then((r) => r.ok ? r.json() : r.json().then((b: {message?: string}) => Promise.reject(b.message ?? 'Failed')))
       .then((data: HistoryEntry[]) => setEntries(data))
       .catch((e: unknown) => setError(String(e)))
       .finally(() => setIsLoading(false))
+  }, [repoUrl, limit, refreshTick])
+
+  useEffect(() => {
+    if (!repoUrl) return
+    const onFocus = () => setRefreshTick((n) => n + 1)
+    const timer = window.setInterval(() => setRefreshTick((n) => n + 1), 8000)
+    window.addEventListener('focus', onFocus)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      window.clearInterval(timer)
+    }
   }, [repoUrl])
 
   if (isLoading) return (
