@@ -1,0 +1,60 @@
+  /* IBM Plex fonts — loaded at runtime in the browser */
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
+  @layer base {
+    :root {
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    /* Force dark mode — app is dark-only */
+    html {
+      color-scheme: dark;
+    }
+
+    body {
+      @apply bg-bg text-text font-sans;
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Custom scrollbar — thin, unobtrusive */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #27272A; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3F3F46; }
+
+    /* Remove default input autofill yellowing */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0px 1000px #18181B inset;
+      -webkit-text-fill-color: #FAFAFA;
+      caret-color: #A3E635;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Selection color */
+    ::selection {
+      background: rgba(163, 230, 53, 0.2);
+      color: #FAFAFA;
+    }
+  }
+
+  @layer utilities {
+    /* Mono text utility */
+    .font-mono-text {
+      font-family: var(--font-mono);
+    }
+
+    /* Accent caret for inputs */
+    .caret-accent {
+      caret-color: #A3E635;
+    }
+  }

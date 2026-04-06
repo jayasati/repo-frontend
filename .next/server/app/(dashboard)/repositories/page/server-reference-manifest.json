@@ -1,0 +1,20 @@
+{
+  "node": {
+    "00bfdd5b775ab4520c4c115009f56036273b9cf03e": {
+      "workers": {
+        "app/(dashboard)/repositories/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/repositories/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/components/Topbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": "src/app/(dashboard)/components/Topbar.tsx"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/repositories/page": "rsc"
+      },
+      "exportedName": "$$RSC_SERVER_ACTION_0",
+      "filename": "src/app/(dashboard)/components/Topbar.tsx"
+    }
+  },
+  "edge": {}
+}

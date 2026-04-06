@@ -1,0 +1,3 @@
+{
+  "/api/auth/nest-github-callback/route": "app/api/auth/nest-github-callback/route.js"
+}
