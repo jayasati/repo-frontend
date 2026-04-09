@@ -42,18 +42,20 @@ export function DiagramBlock({ title, content }: DiagramBlockProps) {
 
   return (
     <div className="bg-bg-surface border border-border rounded-lg overflow-hidden">
-      {/* Header */}
-      <button
-        type="button"
+      <div
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-bg-surface2 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-bg-surface2 transition-colors cursor-pointer"
       >
         <span className="font-mono text-[12px] text-text">{title}</span>
+
         <div className="flex items-center gap-3">
           {open && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); void handleCopy() }}
+              onClick={(e) => {
+                e.stopPropagation()
+                void handleCopy()
+              }}
               className="flex items-center gap-1 font-mono text-[11px] text-text-muted hover:text-text transition-colors"
             >
               {copied
@@ -62,12 +64,13 @@ export function DiagramBlock({ title, content }: DiagramBlockProps) {
               }
             </button>
           )}
+
           {open
-            ? <ChevronUp  className="h-3.5 w-3.5 text-text-dim" />
+            ? <ChevronUp className="h-3.5 w-3.5 text-text-dim" />
             : <ChevronDown className="h-3.5 w-3.5 text-text-dim" />
           }
         </div>
-      </button>
+      </div>
 
       {/* Body */}
       {open && (

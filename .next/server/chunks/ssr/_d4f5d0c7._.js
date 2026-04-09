@@ -65,7 +65,19 @@ const useChatStore = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_mo
         session: null,
         initSession: (jobId, projectName, files)=>{
             const existing = get().session;
-            if (existing?.jobId === jobId) return;
+            if (existing?.jobId === jobId) {
+                const validSelected = existing.selectedIds.filter((id)=>files.some((f)=>f.id === id));
+                const fallbackSelected = files.slice(0, 3).map((f)=>f.id);
+                set({
+                    session: {
+                        ...existing,
+                        projectName,
+                        contextFiles: files,
+                        selectedIds: validSelected.length > 0 ? validSelected : fallbackSelected
+                    }
+                });
+                return;
+            }
             set({
                 session: {
                     jobId,
@@ -286,6 +298,15 @@ function ContextFilePicker() {
     const MAX_TOKENS = 6_000;
     const usedPct = Math.min(totalTokens / MAX_TOKENS * 100, 100);
     const isOverBudget = totalTokens > MAX_TOKENS;
+    const overview = contextFiles.find((f)=>f.id === '__overview__');
+    const treeFiles = contextFiles.filter((f)=>f.id !== '__overview__').sort((a, b)=>a.id.localeCompare(b.id)).map((f)=>{
+        const parts = f.id.split('/').filter(Boolean);
+        return {
+            ...f,
+            depth: Math.max(0, parts.length - 1),
+            shortLabel: parts[parts.length - 1] ?? f.label
+        };
+    });
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex flex-col gap-1.5",
         children: [
@@ -297,7 +318,7 @@ function ContextFilePicker() {
                         children: "Context scope"
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                        lineNumber: 35,
+                        lineNumber: 48,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -306,80 +327,145 @@ function ContextFilePicker() {
                         children: "select all"
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                        lineNumber: 38,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                lineNumber: 34,
+                lineNumber: 47,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex flex-col gap-1 max-h-48 overflow-y-auto pr-1",
-                children: contextFiles.map((file)=>{
-                    const isSelected = selectedIds.includes(file.id);
-                    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                        onClick: ()=>toggleFile(file.id),
-                        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors w-full', isSelected ? 'bg-accent/8 border border-accent/20' : 'hover:bg-bg-surface2 border border-transparent'),
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center', isSelected ? 'bg-accent border-accent' : 'border-text-dim'),
-                                children: isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                    width: "8",
-                                    height: "8",
-                                    viewBox: "0 0 8 8",
-                                    fill: "none",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                        d: "M1 4l2 2 4-4",
-                                        stroke: "#000",
-                                        strokeWidth: "1.2",
-                                        strokeLinecap: "round"
+                children: [
+                    overview && (()=>{
+                        const isSelected = selectedIds.includes(overview.id);
+                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            onClick: ()=>toggleFile(overview.id),
+                            className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors w-full', isSelected ? 'bg-accent/8 border border-accent/20' : 'hover:bg-bg-surface2 border border-transparent'),
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center', isSelected ? 'bg-accent border-accent' : 'border-text-dim'),
+                                    children: isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                        width: "8",
+                                        height: "8",
+                                        viewBox: "0 0 8 8",
+                                        fill: "none",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                            d: "M1 4l2 2 4-4",
+                                            stroke: "#000",
+                                            strokeWidth: "1.2",
+                                            strokeLinecap: "round"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                            lineNumber: 82,
+                                            columnNumber: 21
+                                        }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                        lineNumber: 73,
-                                        columnNumber: 21
+                                        lineNumber: 81,
+                                        columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                    lineNumber: 72,
-                                    columnNumber: 19
+                                    lineNumber: 74,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('font-mono text-[11px] flex-1 truncate', isSelected ? 'text-accent' : 'text-text-muted'),
+                                    children: overview.label
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                    lineNumber: 86,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "font-mono text-[10px] text-text-dim flex-shrink-0",
+                                    children: [
+                                        "~",
+                                        overview.tokens,
+                                        "t"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                    lineNumber: 92,
+                                    columnNumber: 15
                                 }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                lineNumber: 63,
-                                columnNumber: 15
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('font-mono text-[11px] flex-1 truncate', isSelected ? 'text-accent' : 'text-text-muted'),
-                                children: file.label
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                lineNumber: 79,
-                                columnNumber: 15
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "font-mono text-[10px] text-text-dim flex-shrink-0",
-                                children: [
-                                    "~",
-                                    file.tokens,
-                                    "t"
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                lineNumber: 87,
-                                columnNumber: 15
-                            }, this)
-                        ]
-                    }, file.id, true, {
-                        fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                        lineNumber: 52,
-                        columnNumber: 13
-                    }, this);
-                })
-            }, void 0, false, {
+                            ]
+                        }, overview.id, true, {
+                            fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                            lineNumber: 64,
+                            columnNumber: 13
+                        }, this);
+                    })(),
+                    treeFiles.map((file)=>{
+                        const isSelected = selectedIds.includes(file.id);
+                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            onClick: ()=>toggleFile(file.id),
+                            className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors w-full', isSelected ? 'bg-accent/8 border border-accent/20' : 'hover:bg-bg-surface2 border border-transparent'),
+                            style: {
+                                paddingLeft: `${8 + file.depth * 10}px`
+                            },
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center', isSelected ? 'bg-accent border-accent' : 'border-text-dim'),
+                                    children: isSelected && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                        width: "8",
+                                        height: "8",
+                                        viewBox: "0 0 8 8",
+                                        fill: "none",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                            d: "M1 4l2 2 4-4",
+                                            stroke: "#000",
+                                            strokeWidth: "1.2",
+                                            strokeLinecap: "round"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                            lineNumber: 125,
+                                            columnNumber: 21
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                        lineNumber: 124,
+                                        columnNumber: 19
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                    lineNumber: 115,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["cn"])('font-mono text-[11px] flex-1 truncate', isSelected ? 'text-accent' : 'text-text-muted'),
+                                    children: file.depth > 0 ? `└─ ${file.shortLabel}` : file.label
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                    lineNumber: 131,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "font-mono text-[10px] text-text-dim flex-shrink-0",
+                                    children: [
+                                        "~",
+                                        file.tokens,
+                                        "t"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                                    lineNumber: 139,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, file.id, true, {
+                            fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
+                            lineNumber: 103,
+                            columnNumber: 13
+                        }, this);
+                    })
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                lineNumber: 47,
+                lineNumber: 60,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -394,12 +480,12 @@ function ContextFilePicker() {
                             }
                         }, void 0, false, {
                             fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                            lineNumber: 98,
+                            lineNumber: 150,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                        lineNumber: 97,
+                        lineNumber: 149,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -413,7 +499,7 @@ function ContextFilePicker() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                lineNumber: 107,
+                                lineNumber: 159,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -424,13 +510,13 @@ function ContextFilePicker() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                                lineNumber: 110,
+                                lineNumber: 162,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                        lineNumber: 106,
+                        lineNumber: 158,
                         columnNumber: 9
                     }, this),
                     isOverBudget && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -438,19 +524,19 @@ function ContextFilePicker() {
                         children: "Over budget — deselect some files for better responses."
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                        lineNumber: 115,
+                        lineNumber: 167,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-                lineNumber: 96,
+                lineNumber: 148,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/chat/ContextFilePicker.tsx",
-        lineNumber: 32,
+        lineNumber: 45,
         columnNumber: 5
     }, this);
 }
@@ -873,18 +959,67 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$chat$2f
 /**
  * Builds ContextFile list from PipelineResult.
  *
- * Strategy: each unique top-level module becomes one context file.
- * The "content" field is a structured text summary of that module's
- * smells, hotspots, and cycle memberships — the AI gets rich context
- * without needing raw source code.
+ * Strategy: infer repo-relative directories from file nodes in the unified graph
+ * (e.g. "src/auth") so the user can scope the LLM to real source folders.
+ *
+ * Note: tokens are rough estimates; the server will enforce real byte/token caps.
  */ function buildContextFiles(result) {
-    // Collect unique module names from smells + hotspots + cycles
-    const moduleNames = new Set();
-    result.smells.forEach((s)=>{
-        if (s.module) moduleNames.add(s.module);
-    });
-    result.hotspots.forEach((h)=>moduleNames.add(h.module));
-    result.cycles.forEach((c)=>c.nodes.forEach((n)=>moduleNames.add(n)));
+    const dirCounts = new Map();
+    const sampleFilesByDir = new Map();
+    const discoveredFiles = new Set();
+    const isFileLike = (p)=>/\.[a-z0-9]+$/i.test(p);
+    const isIgnoredPath = (p)=>{
+        const x = p.toLowerCase();
+        return x.includes('/.tmp/') || x.includes('/node_modules/') || x.includes('/dist/') || x.includes('/build/') || x.includes('/coverage/') || x.includes('/.next/') || x.includes('/.git/');
+    };
+    const toRepoRelativeFile = (rawPath)=>{
+        const normalized = rawPath.replace(/\\/g, '/').trim();
+        if (!normalized.includes('/')) return null;
+        if (!isFileLike(normalized)) return null;
+        if (isIgnoredPath(normalized)) return null;
+        // Most analyses include absolute paths; strip to a repo-relative anchor.
+        for (const marker of [
+            '/src/',
+            '/app/',
+            '/packages/',
+            '/libs/',
+            '/lib/'
+        ]){
+            const idx = normalized.lastIndexOf(marker);
+            if (idx >= 0) return normalized.slice(idx + 1) // keep the anchor segment (e.g. src/...)
+            ;
+        }
+        // If already repo-relative, keep as-is.
+        if (!/^[a-zA-Z]:\//.test(normalized) && !normalized.startsWith('/')) return normalized;
+        return null;
+    };
+    const recordFilePath = (rawPath)=>{
+        const file = toRepoRelativeFile(rawPath);
+        if (!file) return;
+        discoveredFiles.add(file);
+        const parts = file.split('/').filter(Boolean);
+        if (parts.length < 2) return;
+        // Count this file for every parent directory so folder selection works as a true subtree scope.
+        for(let i = 1; i < parts.length; i += 1){
+            const dir = parts.slice(0, i).join('/');
+            dirCounts.set(dir, (dirCounts.get(dir) ?? 0) + 1);
+            const samples = sampleFilesByDir.get(dir) ?? [];
+            if (samples.length < 3) {
+                samples.push(file);
+                sampleFilesByDir.set(dir, samples);
+            }
+        }
+    };
+    for (const n of result.unifiedGraph.nodes){
+        recordFilePath(n.id ?? '');
+    }
+    // Fallback: some graphs may have sparse nodes but useful edge endpoints.
+    if (dirCounts.size === 0) {
+        for (const e of result.unifiedGraph.edges){
+            recordFilePath(e.from ?? '');
+            recordFilePath(e.to ?? '');
+        }
+    }
     // Always include a "full project overview" entry
     const files = [
         {
@@ -900,33 +1035,98 @@ Modules: ${result.metrics.moduleCount}, Dependencies: ${result.metrics.dependenc
 Cycles: ${result.metrics.cycleCount}, Smells: ${result.smells.length}`
         }
     ];
-    // One file per module
-    for (const name of moduleNames){
-        const moduleSmells = result.smells.filter((s)=>s.module === name);
-        const moduleHotspot = result.hotspots.find((h)=>h.module === name);
-        const moduleCycles = result.cycles.filter((c)=>c.nodes.includes(name));
-        const lines = [
-            `Module: ${name}`
-        ];
-        if (moduleSmells.length > 0) {
-            lines.push('Smells:');
-            moduleSmells.forEach((s)=>lines.push(`  - [${s.severity}] ${s.type}: ${s.message}`));
-        }
-        if (moduleHotspot) {
-            lines.push(`Hotspot: fan-out ${moduleHotspot.fanOut} (${moduleHotspot.risk} risk)`);
-        }
-        if (moduleCycles.length > 0) {
-            lines.push('Involved in cycles:');
-            moduleCycles.forEach((c)=>lines.push(`  - ${c.nodes.join(' → ')}`));
-        }
-        const content = lines.join('\n');
-        // Rough token estimate: ~4 chars per token
-        const tokens = Math.ceil(content.length / 4);
+    // One entry per discovered directory in the real source tree.
+    const scopes = Array.from(dirCounts.entries()).sort((a, b)=>{
+        const aDepth = a[0].split('/').length;
+        const bDepth = b[0].split('/').length;
+        if (aDepth !== bDepth) return aDepth - bDepth;
+        if (b[1] !== a[1]) return b[1] - a[1];
+        return a[0].localeCompare(b[0]);
+    }).map(([scope])=>scope);
+    for (const scope of scopes){
+        const fileCount = dirCounts.get(scope) ?? 0;
+        // Rough estimate for folder context size; backend enforces real caps.
+        const tokens = Math.max(80, Math.min(4500, fileCount * 120));
+        const samples = sampleFilesByDir.get(scope) ?? [];
         files.push({
-            id: name,
-            label: name,
-            content,
-            tokens
+            id: scope,
+            label: `${scope} (${fileCount} files)`,
+            tokens,
+            content: `Source scope: ${scope}\nEstimated files: ${fileCount}\nSample files:\n${samples.map((s)=>`- ${s}`).join('\n')}`
+        });
+    }
+    // Include actual file leaves so the context tree mirrors codebase structure exactly.
+    const fileEntries = Array.from(discoveredFiles).sort((a, b)=>a.localeCompare(b));
+    for (const filePath of fileEntries){
+        files.push({
+            id: filePath,
+            label: filePath.split('/').pop() ?? filePath,
+            tokens: 90,
+            content: `Source file: ${filePath}`
+        });
+    }
+    return files;
+}
+function buildContextFilesFromSourceTree(result, tree) {
+    const files = [
+        {
+            id: '__overview__',
+            label: 'Project overview',
+            tokens: 120,
+            content: `Project: ${result.projectName}
+Language: ${result.detection.languages[0]?.name ?? 'unknown'}
+Framework: ${result.detection.framework ?? 'none'}
+Source root: ${tree.rootHint}
+Overall score: ${result.score.overall}/100
+Modules: ${result.metrics.moduleCount}, Dependencies: ${result.metrics.dependencyCount}
+Cycles: ${result.metrics.cycleCount}, Smells: ${result.smells.length}`
+        }
+    ];
+    const normalized = tree.entries.map((e)=>({
+            ...e,
+            path: e.path.replace(/\\/g, '/').replace(/^\/+/, '')
+        })).filter((e)=>e.path.length > 0);
+    const filePaths = normalized.filter((e)=>e.type === 'file').map((e)=>e.path);
+    const fileSet = new Set(filePaths);
+    // Ensure parent directories exist even if backend response is sparse.
+    const dirSet = new Set(normalized.filter((e)=>e.type === 'dir').map((e)=>e.path));
+    for (const filePath of filePaths){
+        const parts = filePath.split('/').filter(Boolean);
+        for(let i = 1; i < parts.length; i += 1){
+            dirSet.add(parts.slice(0, i).join('/'));
+        }
+    }
+    const dirFileCounts = new Map();
+    for (const filePath of fileSet){
+        const parts = filePath.split('/').filter(Boolean);
+        for(let i = 1; i < parts.length; i += 1){
+            const dir = parts.slice(0, i).join('/');
+            dirFileCounts.set(dir, (dirFileCounts.get(dir) ?? 0) + 1);
+        }
+    }
+    const sortedDirs = Array.from(dirSet).sort((a, b)=>{
+        const aDepth = a.split('/').length;
+        const bDepth = b.split('/').length;
+        if (aDepth !== bDepth) return aDepth - bDepth;
+        return a.localeCompare(b);
+    });
+    for (const dir of sortedDirs){
+        const count = dirFileCounts.get(dir) ?? 0;
+        if (count === 0) continue;
+        files.push({
+            id: dir,
+            label: `${dir} (${count} files)`,
+            tokens: Math.max(80, Math.min(4500, count * 120)),
+            content: `Source scope: ${dir}\nEstimated files: ${count}`
+        });
+    }
+    const sortedFiles = Array.from(fileSet).sort((a, b)=>a.localeCompare(b));
+    for (const filePath of sortedFiles){
+        files.push({
+            id: filePath,
+            label: filePath.split('/').pop() ?? filePath,
+            tokens: 90,
+            content: `Source file: ${filePath}`
         });
     }
     return files;
@@ -935,14 +1135,37 @@ function ChatWindow({ result, jobId }) {
     const { initSession, clearMessages, session } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$features$2f$chat$2f$store$2f$chat$2e$store$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useChatStore"])();
     const { send, cancel, isStreaming } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useChat$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useChat"])();
     const bottomRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
-    // Initialise the session once when the component mounts
+    // Initialise session from exact source tree; fallback to graph-derived scopes.
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        const files = buildContextFiles(result);
-        initSession(jobId, result.projectName, files);
+        // Avoid re-fetching context tree on unrelated re-renders.
+        if (session?.jobId === jobId && session.contextFiles.length > 0) return;
+        let cancelled = false;
+        (async ()=>{
+            try {
+                const res = await fetch(`/api/chat/context-tree?jobId=${encodeURIComponent(jobId)}&maxEntries=5000`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const tree = await res.json();
+                if (!tree || !Array.isArray(tree.entries) || tree.entries.length === 0) {
+                    throw new Error('Empty source tree');
+                }
+                if (cancelled) return;
+                const files = buildContextFilesFromSourceTree(result, tree);
+                initSession(jobId, result.projectName, files);
+            } catch  {
+                if (cancelled) return;
+                const files = buildContextFiles(result);
+                initSession(jobId, result.projectName, files);
+            }
+        })();
+        return ()=>{
+            cancelled = true;
+        };
     }, [
         jobId,
         result,
-        initSession
+        initSession,
+        session?.jobId,
+        session?.contextFiles.length
     ]);
     // Auto-scroll to the bottom when messages change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
@@ -967,18 +1190,18 @@ function ChatWindow({ result, jobId }) {
                                 children: "Context scope"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 105,
+                                lineNumber: 277,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$chat$2f$ContextFilePicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ContextFilePicker"], {}, void 0, false, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 108,
+                                lineNumber: 280,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 104,
+                        lineNumber: 276,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -988,18 +1211,18 @@ function ChatWindow({ result, jobId }) {
                             children: "The AI only reads the selected modules. Narrower scope = more accurate answers."
                         }, void 0, false, {
                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                            lineNumber: 112,
+                            lineNumber: 284,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 111,
+                        lineNumber: 283,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                lineNumber: 103,
+                lineNumber: 275,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1018,12 +1241,12 @@ function ChatWindow({ result, jobId }) {
                                             children: "AI"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                            lineNumber: 124,
+                                            lineNumber: 296,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 123,
+                                        lineNumber: 295,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1031,7 +1254,7 @@ function ChatWindow({ result, jobId }) {
                                         children: "Codebase chat"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 126,
+                                        lineNumber: 298,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1039,13 +1262,13 @@ function ChatWindow({ result, jobId }) {
                                         children: result.projectName
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 127,
+                                        lineNumber: 299,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 122,
+                                lineNumber: 294,
                                 columnNumber: 11
                             }, this),
                             hasMessages && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1056,20 +1279,20 @@ function ChatWindow({ result, jobId }) {
                                         className: "h-3 w-3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 135,
+                                        lineNumber: 307,
                                         columnNumber: 15
                                     }, this),
                                     "Clear"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 131,
+                                lineNumber: 303,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 121,
+                        lineNumber: 293,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1087,17 +1310,17 @@ function ChatWindow({ result, jobId }) {
                                                 children: "AI"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                lineNumber: 148,
+                                                lineNumber: 320,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                            lineNumber: 147,
+                                            lineNumber: 319,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 146,
+                                        lineNumber: 318,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1107,7 +1330,7 @@ function ChatWindow({ result, jobId }) {
                                                 children: "Ask about your codebase"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                lineNumber: 152,
+                                                lineNumber: 324,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1120,45 +1343,45 @@ function ChatWindow({ result, jobId }) {
                                                         children: result.projectName
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                        lineNumber: 155,
+                                                        lineNumber: 327,
                                                         columnNumber: 19
                                                     }, this),
                                                     ". Select modules on the left to scope the context."
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                lineNumber: 153,
+                                                lineNumber: 325,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 151,
+                                        lineNumber: 323,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 145,
+                                lineNumber: 317,
                                 columnNumber: 13
                             }, this) : session.messages.map((msg)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$chat$2f$ChatMessage$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ChatMessageBubble"], {
                                     message: msg
                                 }, msg.id, false, {
                                     fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                    lineNumber: 162,
+                                    lineNumber: 334,
                                     columnNumber: 15
                                 }, this)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 ref: bottomRef
                             }, void 0, false, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 165,
+                                lineNumber: 337,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 142,
+                        lineNumber: 314,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1169,24 +1392,24 @@ function ChatWindow({ result, jobId }) {
                             isStreaming: isStreaming
                         }, void 0, false, {
                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                            lineNumber: 170,
+                            lineNumber: 342,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 169,
+                        lineNumber: 341,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                lineNumber: 119,
+                lineNumber: 291,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-        lineNumber: 101,
+        lineNumber: 273,
         columnNumber: 5
     }, this);
 }

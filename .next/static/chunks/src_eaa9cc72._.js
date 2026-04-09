@@ -1161,22 +1161,112 @@ var _s = __turbopack_context__.k.signature();
     }
     return files;
 }
+function buildContextFilesFromSourceTree(result, tree) {
+    var _result_detection_languages_;
+    var _result_detection_languages__name, _result_detection_framework;
+    const files = [
+        {
+            id: '__overview__',
+            label: 'Project overview',
+            tokens: 120,
+            content: "Project: ".concat(result.projectName, "\nLanguage: ").concat((_result_detection_languages__name = (_result_detection_languages_ = result.detection.languages[0]) === null || _result_detection_languages_ === void 0 ? void 0 : _result_detection_languages_.name) !== null && _result_detection_languages__name !== void 0 ? _result_detection_languages__name : 'unknown', "\nFramework: ").concat((_result_detection_framework = result.detection.framework) !== null && _result_detection_framework !== void 0 ? _result_detection_framework : 'none', "\nSource root: ").concat(tree.rootHint, "\nOverall score: ").concat(result.score.overall, "/100\nModules: ").concat(result.metrics.moduleCount, ", Dependencies: ").concat(result.metrics.dependencyCount, "\nCycles: ").concat(result.metrics.cycleCount, ", Smells: ").concat(result.smells.length)
+        }
+    ];
+    const normalized = tree.entries.map((e)=>({
+            ...e,
+            path: e.path.replace(/\\/g, '/').replace(/^\/+/, '')
+        })).filter((e)=>e.path.length > 0);
+    const filePaths = normalized.filter((e)=>e.type === 'file').map((e)=>e.path);
+    const fileSet = new Set(filePaths);
+    // Ensure parent directories exist even if backend response is sparse.
+    const dirSet = new Set(normalized.filter((e)=>e.type === 'dir').map((e)=>e.path));
+    for (const filePath of filePaths){
+        const parts = filePath.split('/').filter(Boolean);
+        for(let i = 1; i < parts.length; i += 1){
+            dirSet.add(parts.slice(0, i).join('/'));
+        }
+    }
+    const dirFileCounts = new Map();
+    for (const filePath of fileSet){
+        const parts = filePath.split('/').filter(Boolean);
+        for(let i = 1; i < parts.length; i += 1){
+            const dir = parts.slice(0, i).join('/');
+            var _dirFileCounts_get;
+            dirFileCounts.set(dir, ((_dirFileCounts_get = dirFileCounts.get(dir)) !== null && _dirFileCounts_get !== void 0 ? _dirFileCounts_get : 0) + 1);
+        }
+    }
+    const sortedDirs = Array.from(dirSet).sort((a, b)=>{
+        const aDepth = a.split('/').length;
+        const bDepth = b.split('/').length;
+        if (aDepth !== bDepth) return aDepth - bDepth;
+        return a.localeCompare(b);
+    });
+    for (const dir of sortedDirs){
+        var _dirFileCounts_get1;
+        const count = (_dirFileCounts_get1 = dirFileCounts.get(dir)) !== null && _dirFileCounts_get1 !== void 0 ? _dirFileCounts_get1 : 0;
+        if (count === 0) continue;
+        files.push({
+            id: dir,
+            label: "".concat(dir, " (").concat(count, " files)"),
+            tokens: Math.max(80, Math.min(4500, count * 120)),
+            content: "Source scope: ".concat(dir, "\nEstimated files: ").concat(count)
+        });
+    }
+    const sortedFiles = Array.from(fileSet).sort((a, b)=>a.localeCompare(b));
+    for (const filePath of sortedFiles){
+        var _filePath_split_pop;
+        files.push({
+            id: filePath,
+            label: (_filePath_split_pop = filePath.split('/').pop()) !== null && _filePath_split_pop !== void 0 ? _filePath_split_pop : filePath,
+            tokens: 90,
+            content: "Source file: ".concat(filePath)
+        });
+    }
+    return files;
+}
 function ChatWindow(param) {
     let { result, jobId } = param;
     _s();
     const { initSession, clearMessages, session } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$features$2f$chat$2f$store$2f$chat$2e$store$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useChatStore"])();
     const { send, cancel, isStreaming } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$useChat$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useChat"])();
     const bottomRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
-    // Initialise the session once when the component mounts
+    // Initialise session from exact source tree; fallback to graph-derived scopes.
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ChatWindow.useEffect": ()=>{
-            const files = buildContextFiles(result);
-            initSession(jobId, result.projectName, files);
+            // Avoid re-fetching context tree on unrelated re-renders.
+            if ((session === null || session === void 0 ? void 0 : session.jobId) === jobId && session.contextFiles.length > 0) return;
+            let cancelled = false;
+            ({
+                "ChatWindow.useEffect": async ()=>{
+                    try {
+                        const res = await fetch("/api/chat/context-tree?jobId=".concat(encodeURIComponent(jobId), "&maxEntries=5000"));
+                        if (!res.ok) throw new Error("HTTP ".concat(res.status));
+                        const tree = await res.json();
+                        if (!tree || !Array.isArray(tree.entries) || tree.entries.length === 0) {
+                            throw new Error('Empty source tree');
+                        }
+                        if (cancelled) return;
+                        const files = buildContextFilesFromSourceTree(result, tree);
+                        initSession(jobId, result.projectName, files);
+                    } catch (e) {
+                        if (cancelled) return;
+                        const files = buildContextFiles(result);
+                        initSession(jobId, result.projectName, files);
+                    }
+                }
+            })["ChatWindow.useEffect"]();
+            return ({
+                "ChatWindow.useEffect": ()=>{
+                    cancelled = true;
+                }
+            })["ChatWindow.useEffect"];
         }
     }["ChatWindow.useEffect"], [
         jobId,
         result,
-        initSession
+        initSession,
+        session === null || session === void 0 ? void 0 : session.jobId,
+        session === null || session === void 0 ? void 0 : session.contextFiles.length
     ]);
     // Auto-scroll to the bottom when messages change
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
@@ -1204,18 +1294,18 @@ function ChatWindow(param) {
                                 children: "Context scope"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 173,
+                                lineNumber: 277,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$chat$2f$ContextFilePicker$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ContextFilePicker"], {}, void 0, false, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 176,
+                                lineNumber: 280,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 172,
+                        lineNumber: 276,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1225,18 +1315,18 @@ function ChatWindow(param) {
                             children: "The AI only reads the selected modules. Narrower scope = more accurate answers."
                         }, void 0, false, {
                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                            lineNumber: 180,
+                            lineNumber: 284,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 179,
+                        lineNumber: 283,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                lineNumber: 171,
+                lineNumber: 275,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1255,12 +1345,12 @@ function ChatWindow(param) {
                                             children: "AI"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                            lineNumber: 192,
+                                            lineNumber: 296,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 191,
+                                        lineNumber: 295,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1268,7 +1358,7 @@ function ChatWindow(param) {
                                         children: "Codebase chat"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 194,
+                                        lineNumber: 298,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1276,13 +1366,13 @@ function ChatWindow(param) {
                                         children: result.projectName
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 195,
+                                        lineNumber: 299,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 190,
+                                lineNumber: 294,
                                 columnNumber: 11
                             }, this),
                             hasMessages && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1293,20 +1383,20 @@ function ChatWindow(param) {
                                         className: "h-3 w-3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 203,
+                                        lineNumber: 307,
                                         columnNumber: 15
                                     }, this),
                                     "Clear"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 199,
+                                lineNumber: 303,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 189,
+                        lineNumber: 293,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1324,17 +1414,17 @@ function ChatWindow(param) {
                                                 children: "AI"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                lineNumber: 216,
+                                                lineNumber: 320,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                            lineNumber: 215,
+                                            lineNumber: 319,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 214,
+                                        lineNumber: 318,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1344,7 +1434,7 @@ function ChatWindow(param) {
                                                 children: "Ask about your codebase"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                lineNumber: 220,
+                                                lineNumber: 324,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1357,45 +1447,45 @@ function ChatWindow(param) {
                                                         children: result.projectName
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                        lineNumber: 223,
+                                                        lineNumber: 327,
                                                         columnNumber: 19
                                                     }, this),
                                                     ". Select modules on the left to scope the context."
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                                lineNumber: 221,
+                                                lineNumber: 325,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                        lineNumber: 219,
+                                        lineNumber: 323,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 213,
+                                lineNumber: 317,
                                 columnNumber: 13
                             }, this) : session.messages.map((msg)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$chat$2f$ChatMessage$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ChatMessageBubble"], {
                                     message: msg
                                 }, msg.id, false, {
                                     fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                    lineNumber: 230,
+                                    lineNumber: 334,
                                     columnNumber: 15
                                 }, this)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 ref: bottomRef
                             }, void 0, false, {
                                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                                lineNumber: 233,
+                                lineNumber: 337,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 210,
+                        lineNumber: 314,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1406,24 +1496,24 @@ function ChatWindow(param) {
                             isStreaming: isStreaming
                         }, void 0, false, {
                             fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                            lineNumber: 238,
+                            lineNumber: 342,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                        lineNumber: 237,
+                        lineNumber: 341,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/chat/ChatWindow.tsx",
-                lineNumber: 187,
+                lineNumber: 291,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/chat/ChatWindow.tsx",
-        lineNumber: 169,
+        lineNumber: 273,
         columnNumber: 5
     }, this);
 }
@@ -1759,316 +1849,6 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
 }),
-"[project]/node_modules/lucide-react/dist/esm/icons/trash-2.js [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-/**
- * @license lucide-react v0.469.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ __turbopack_context__.s([
-    "default",
-    ()=>Trash2
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/createLucideIcon.js [app-client] (ecmascript)");
-;
-const Trash2 = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])("Trash2", [
-    [
-        "path",
-        {
-            d: "M3 6h18",
-            key: "d0wm0j"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",
-            key: "4alrt4"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",
-            key: "v07s0e"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "10",
-            x2: "10",
-            y1: "11",
-            y2: "17",
-            key: "1uufr5"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "14",
-            x2: "14",
-            y1: "11",
-            y2: "17",
-            key: "xtxkd"
-        }
-    ]
-]);
-;
- //# sourceMappingURL=trash-2.js.map
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/trash-2.js [app-client] (ecmascript) <export default as Trash2>", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "Trash2",
-    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"]
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/trash-2.js [app-client] (ecmascript)");
-}),
-"[project]/node_modules/zustand/esm/vanilla.mjs [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "createStore",
-    ()=>createStore
-]);
-const createStoreImpl = (createState)=>{
-    let state;
-    const listeners = /* @__PURE__ */ new Set();
-    const setState = (partial, replace)=>{
-        const nextState = typeof partial === "function" ? partial(state) : partial;
-        if (!Object.is(nextState, state)) {
-            const previousState = state;
-            state = (replace != null ? replace : typeof nextState !== "object" || nextState === null) ? nextState : Object.assign({}, state, nextState);
-            listeners.forEach((listener)=>listener(state, previousState));
-        }
-    };
-    const getState = ()=>state;
-    const getInitialState = ()=>initialState;
-    const subscribe = (listener)=>{
-        listeners.add(listener);
-        return ()=>listeners.delete(listener);
-    };
-    const api = {
-        setState,
-        getState,
-        getInitialState,
-        subscribe
-    };
-    const initialState = state = createState(setState, getState, api);
-    return api;
-};
-const createStore = (createState)=>createState ? createStoreImpl(createState) : createStoreImpl;
-;
-}),
-"[project]/node_modules/zustand/esm/react.mjs [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "create",
-    ()=>create,
-    "useStore",
-    ()=>useStore
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zustand$2f$esm$2f$vanilla$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/zustand/esm/vanilla.mjs [app-client] (ecmascript)");
-;
-;
-const identity = (arg)=>arg;
-function useStore(api) {
-    let selector = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : identity;
-    const slice = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].useSyncExternalStore(api.subscribe, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].useCallback({
-        "useStore.useSyncExternalStore[slice]": ()=>selector(api.getState())
-    }["useStore.useSyncExternalStore[slice]"], [
-        api,
-        selector
-    ]), __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].useCallback({
-        "useStore.useSyncExternalStore[slice]": ()=>selector(api.getInitialState())
-    }["useStore.useSyncExternalStore[slice]"], [
-        api,
-        selector
-    ]));
-    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].useDebugValue(slice);
-    return slice;
-}
-const createImpl = (createState)=>{
-    const api = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zustand$2f$esm$2f$vanilla$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createStore"])(createState);
-    const useBoundStore = (selector)=>useStore(api, selector);
-    Object.assign(useBoundStore, api);
-    return useBoundStore;
-};
-const create = (createState)=>createState ? createImpl(createState) : createImpl;
-;
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/copy.js [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-/**
- * @license lucide-react v0.469.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ __turbopack_context__.s([
-    "default",
-    ()=>Copy
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/createLucideIcon.js [app-client] (ecmascript)");
-;
-const Copy = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])("Copy", [
-    [
-        "rect",
-        {
-            width: "14",
-            height: "14",
-            x: "8",
-            y: "8",
-            rx: "2",
-            ry: "2",
-            key: "17jyea"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
-            key: "zix9uf"
-        }
-    ]
-]);
-;
- //# sourceMappingURL=copy.js.map
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/copy.js [app-client] (ecmascript) <export default as Copy>", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "Copy",
-    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$copy$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"]
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$copy$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/copy.js [app-client] (ecmascript)");
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/check.js [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-/**
- * @license lucide-react v0.469.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ __turbopack_context__.s([
-    "default",
-    ()=>Check
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/createLucideIcon.js [app-client] (ecmascript)");
-;
-const Check = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])("Check", [
-    [
-        "path",
-        {
-            d: "M20 6 9 17l-5-5",
-            key: "1gmf2c"
-        }
-    ]
-]);
-;
- //# sourceMappingURL=check.js.map
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/check.js [app-client] (ecmascript) <export default as Check>", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "Check",
-    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"]
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/check.js [app-client] (ecmascript)");
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/send.js [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-/**
- * @license lucide-react v0.469.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ __turbopack_context__.s([
-    "default",
-    ()=>Send
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/createLucideIcon.js [app-client] (ecmascript)");
-;
-const Send = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])("Send", [
-    [
-        "path",
-        {
-            d: "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z",
-            key: "1ffxy3"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "m21.854 2.147-10.94 10.939",
-            key: "12cjpa"
-        }
-    ]
-]);
-;
- //# sourceMappingURL=send.js.map
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/send.js [app-client] (ecmascript) <export default as Send>", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "Send",
-    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"]
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/send.js [app-client] (ecmascript)");
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-client] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-/**
- * @license lucide-react v0.469.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ __turbopack_context__.s([
-    "default",
-    ()=>X
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/createLucideIcon.js [app-client] (ecmascript)");
-;
-const X = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$createLucideIcon$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])("X", [
-    [
-        "path",
-        {
-            d: "M18 6 6 18",
-            key: "1bl5f8"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "m6 6 12 12",
-            key: "d8bk6v"
-        }
-    ]
-]);
-;
- //# sourceMappingURL=x.js.map
-}),
-"[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-client] (ecmascript) <export default as X>", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "X",
-    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"]
-]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/x.js [app-client] (ecmascript)");
-}),
 ]);
 
-//# sourceMappingURL=_3e7c21ad._.js.map
+//# sourceMappingURL=src_eaa9cc72._.js.map

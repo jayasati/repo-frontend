@@ -16,7 +16,21 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
   initSession: (jobId, projectName, files) => {
     const existing = get().session
-    if (existing?.jobId === jobId) return
+    if (existing?.jobId === jobId) {
+      const validSelected = existing.selectedIds.filter((id) =>
+        files.some((f) => f.id === id),
+      )
+      const fallbackSelected = files.slice(0, 3).map((f) => f.id)
+      set({
+        session: {
+          ...existing,
+          projectName,
+          contextFiles: files,
+          selectedIds: validSelected.length > 0 ? validSelected : fallbackSelected,
+        },
+      })
+      return
+    }
     set({
       session: {
         jobId,

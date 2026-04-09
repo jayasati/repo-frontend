@@ -28,6 +28,19 @@ export function ContextFilePicker() {
   const usedPct      = Math.min((totalTokens / MAX_TOKENS) * 100, 100)
   const isOverBudget = totalTokens > MAX_TOKENS
 
+  const overview = contextFiles.find((f) => f.id === '__overview__')
+  const treeFiles = contextFiles
+    .filter((f) => f.id !== '__overview__')
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((f) => {
+      const parts = f.id.split('/').filter(Boolean)
+      return {
+        ...f,
+        depth: Math.max(0, parts.length - 1),
+        shortLabel: parts[parts.length - 1] ?? f.label,
+      }
+    })
+
   return (
     <div className="flex flex-col gap-1.5">
       {/* Header */}
@@ -45,7 +58,45 @@ export function ContextFilePicker() {
 
       {/* File list */}
       <div className="flex flex-col gap-1 max-h-48 overflow-y-auto pr-1">
-        {contextFiles.map((file) => {
+        {overview && (() => {
+          const isSelected = selectedIds.includes(overview.id)
+          return (
+            <button
+              key={overview.id}
+              onClick={() => toggleFile(overview.id)}
+              className={cn(
+                'flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors w-full',
+                isSelected
+                  ? 'bg-accent/8 border border-accent/20'
+                  : 'hover:bg-bg-surface2 border border-transparent',
+              )}
+            >
+              <div
+                className={cn(
+                  'w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center',
+                  isSelected ? 'bg-accent border-accent' : 'border-text-dim',
+                )}
+              >
+                {isSelected && (
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                    <path d="M1 4l2 2 4-4" stroke="#000" strokeWidth="1.2" strokeLinecap="round" />
+                  </svg>
+                )}
+              </div>
+              <span className={cn(
+                'font-mono text-[11px] flex-1 truncate',
+                isSelected ? 'text-accent' : 'text-text-muted',
+              )}>
+                {overview.label}
+              </span>
+              <span className="font-mono text-[10px] text-text-dim flex-shrink-0">
+                ~{overview.tokens}t
+              </span>
+            </button>
+          )
+        })()}
+
+        {treeFiles.map((file) => {
           const isSelected = selectedIds.includes(file.id)
 
           return (
@@ -58,6 +109,7 @@ export function ContextFilePicker() {
                   ? 'bg-accent/8 border border-accent/20'
                   : 'hover:bg-bg-surface2 border border-transparent',
               )}
+              style={{ paddingLeft: `${8 + file.depth * 10}px` }}
             >
               {/* Checkbox */}
               <div
@@ -80,7 +132,7 @@ export function ContextFilePicker() {
                 'font-mono text-[11px] flex-1 truncate',
                 isSelected ? 'text-accent' : 'text-text-muted',
               )}>
-                {file.label}
+                {file.depth > 0 ? `└─ ${file.shortLabel}` : file.label}
               </span>
 
               {/* Token count */}

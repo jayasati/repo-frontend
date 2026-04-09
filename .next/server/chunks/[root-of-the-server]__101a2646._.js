@@ -1,5 +1,5 @@
 module.exports = [
-"[project]/.next-internal/server/app/api/chat/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
+"[project]/.next-internal/server/app/api/chat/context-tree/route/actions.js [app-rsc] (server actions loader, ecmascript)", ((__turbopack_context__, module, exports) => {
 
 }),
 "[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
@@ -38,12 +38,6 @@ const mod = __turbopack_context__.x("next/dist/shared/lib/no-fallback-error.exte
 
 module.exports = mod;
 }),
-"[externals]/crypto [external] (crypto, cjs)", ((__turbopack_context__, module, exports) => {
-
-const mod = __turbopack_context__.x("crypto", () => require("crypto"));
-
-module.exports = mod;
-}),
 "[externals]/next/dist/server/app-render/after-task-async-storage.external.js [external] (next/dist/server/app-render/after-task-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
 
 const mod = __turbopack_context__.x("next/dist/server/app-render/after-task-async-storage.external.js", () => require("next/dist/server/app-render/after-task-async-storage.external.js"));
@@ -53,6 +47,12 @@ module.exports = mod;
 "[externals]/next/dist/server/app-render/action-async-storage.external.js [external] (next/dist/server/app-render/action-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
 
 const mod = __turbopack_context__.x("next/dist/server/app-render/action-async-storage.external.js", () => require("next/dist/server/app-render/action-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/crypto [external] (crypto, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("crypto", () => require("crypto"));
 
 module.exports = mod;
 }),
@@ -337,281 +337,167 @@ const { handlers, signIn, signOut, auth } = (0, __TURBOPACK__imported__module__$
 var __TURBOPACK__imported__module__$5b$project$5d2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/auth.ts [app-route] (ecmascript)");
 ;
 }),
-"[project]/src/lib/api/analyze.api.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"[project]/src/app/api/chat/context-tree/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
 __turbopack_context__.s([
-    "downloadReport",
-    ()=>downloadReport,
-    "enqueueAnalysis",
-    ()=>enqueueAnalysis,
-    "getAnalysisResult",
-    ()=>getAnalysisResult
+    "GET",
+    ()=>GET
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/api/client.ts [app-route] (ecmascript)");
-;
-async function enqueueAnalysis(payload, /** Nest JWT — optional; GitHub-only NextAuth sessions may omit it (backend /analyze is open). */ accessToken) {
-    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["apiFetch"])('/analyze', {
-        method: 'POST',
-        body: payload,
-        accessToken
-    });
-}
-async function getAnalysisResult(jobId, accessToken) {
-    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["apiFetch"])(`/analyze/${jobId}`, {
-        method: 'GET',
-        accessToken
-    });
-}
-async function downloadReport(jobId, format, accessToken) {
-    const base = ("TURBOPACK compile-time value", "http://localhost:3000") ?? 'http://localhost:3000';
-    return fetch(`${base}/analyze/${jobId}/report?format=${format}`, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
-    });
-}
-}),
-"[project]/src/app/api/chat/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
-"use strict";
-
-__turbopack_context__.s([
-    "POST",
-    ()=>POST
-]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/src/auth.ts [app-route] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/auth.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$analyze$2e$api$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/api/analyze.api.ts [app-route] (ecmascript)");
 ;
 ;
-// ── OpenAI streaming ──────────────────────────────────────────────────────────
-// We call the OpenAI REST API directly with fetch() so this route stays
-// compatible with Next.js Edge Runtime (no SDK needed).
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const OPENAI_MODEL = 'gpt-4o';
-// ── System prompt builder ─────────────────────────────────────────────────────
-/**
- * Builds a focused system prompt from:
- * - Structural analysis (PipelineResult)
- * - A bounded raw source "pack" for the user-selected paths
- *
- * The raw source pack is generated by the backend on demand (it may re-clone
- * the repo for GitHub analyses). The pack is byte-capped and may truncate files.
- */ function buildSystemPrompt(args) {
-    const { result, selectedPaths, sourcePack } = args;
-    const { projectName, detection, metrics, smells } = result;
-    const lang = detection.languages[0]?.name ?? 'unknown';
-    const framework = detection.framework ?? 'none';
-    const scopeLabel = selectedPaths.length > 0 ? selectedPaths.join(', ') : 'no source scope selected';
-    const smellsPreview = smells.slice(0, 20).map((s)=>`- [${s.severity.toUpperCase()}] ${s.type}${s.module ? ` (${s.module})` : ''}: ${s.message}`).join('\n') || '- none';
-    const filesBlock = sourcePack.files.length === 0 ? '(no source files returned — select at least one folder like "src/auth")' : sourcePack.files.map((f)=>{
-        const trunc = f.truncated ? ' (TRUNCATED)' : '';
-        return `--- file: ${f.path}${trunc} ---\n${f.content}\n`;
-    }).join('\n');
-    return `You are a senior software engineer helping the user understand and improve the codebase "${projectName}".
-
-SCOPE: Answer ONLY about the following modules/files: ${scopeLabel}
-If the user asks about something outside this scope, politely say you only have context for the listed modules and suggest they add those files to the context.
-
-PROJECT CONTEXT:
-- Language: ${lang}
-- Framework: ${framework}
-- ORM: ${detection.orm ?? 'none'}
-- Analysis depth: ${detection.analysisDepth}
-- Source root: ${sourcePack.rootHint}
-
-ARCHITECTURE METRICS (full project):
-- Module count: ${metrics.moduleCount}
-- Dependency count: ${metrics.dependencyCount}
-- Cycle count: ${metrics.cycleCount}
-- Average fan-out: ${metrics.averageFanOut}
-- Max fan-out: ${metrics.maxFanOut}
-- Dependency density: ${(metrics.dependencyDensity * 100).toFixed(1)}%
-
-ARCHITECTURE SMELLS (top 20 preview):
-${smellsPreview}
-
-INSTRUCTIONS:
-1. Use the SOURCE FILES below as ground truth. If they are truncated or insufficient, ask the user to add more paths to scope.
-2. Be specific — mention file paths and function/class names when relevant.
-3. When identifying issues, explain WHY they are a problem and HOW to fix them (with minimal, safe edits).
-4. Format code suggestions in fenced code blocks with the correct language tag.
-5. Do not request or output secrets. Never invent code that is not present in SOURCE FILES.
-
-SOURCE FILES (selected scope, ~${sourcePack.totalTokens} tokens):
-${filesBlock}`;
-}
-async function POST(req) {
+async function GET(req) {
     const session = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$auth$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["auth"])();
-    if (!session?.accessToken) {
-        return new Response('Unauthorized', {
+    if (!session?.user) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            message: 'Unauthorized'
+        }, {
             status: 401
         });
     }
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-        return new Response('OpenAI API key not configured', {
-            status: 503
-        });
-    }
-    let body;
-    try {
-        body = await req.json();
-    } catch  {
-        return new Response('Invalid JSON', {
+    const jobId = req.nextUrl.searchParams.get('jobId');
+    if (!jobId) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            message: 'jobId is required'
+        }, {
             status: 400
         });
     }
-    const { jobId, messages, selectedIds } = body;
-    if (!jobId || !Array.isArray(messages)) {
-        return new Response('jobId and messages are required', {
-            status: 400
-        });
-    }
-    // Fetch the analysis result to build the system prompt
-    let result;
-    try {
-        result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$analyze$2e$api$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getAnalysisResult"])(jobId, session.accessToken);
-    } catch  {
-        return new Response('Analysis result not found — it may have expired', {
-            status: 404
-        });
-    }
-    const selectedPaths = (selectedIds ?? []).filter((id)=>id !== '__overview__');
-    // Fetch raw source pack for the selected paths (bounded, may truncate)
     const base = ("TURBOPACK compile-time value", "http://localhost:3000") ?? 'http://localhost:3000';
-    const packRequestBody = JSON.stringify({
-        paths: selectedPaths,
-        includeImportClosure: true,
-        importDepth: 2,
-        maxTotalBytes: 220000,
-        maxFileBytes: 45000,
-        maxFiles: 60
-    });
-    const authHeaders = {
-        'Content-Type': 'application/json'
-    };
-    if (session.accessToken) {
-        authHeaders.Authorization = `Bearer ${session.accessToken}`;
+    const maxEntries = req.nextUrl.searchParams.get('maxEntries') ?? '5000';
+    const headers = {};
+    if (session?.accessToken) {
+        headers.Authorization = `Bearer ${session.accessToken}`;
     }
-    let packRes = await fetch(`${base}/copilot/${jobId}/source-pack`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: packRequestBody
-    });
-    // Fallback for backends that expose source-pack under /analyze.
-    if (!packRes.ok) {
-        const analyzePackRes = await fetch(`${base}/analyze/${jobId}/source-pack`, {
-            method: 'POST',
-            headers: authHeaders,
-            body: packRequestBody
-        });
-        if (analyzePackRes.ok) {
-            packRes = analyzePackRes;
+    const deriveEntriesFromAnalysis = (analysis)=>{
+        const graph = analysis && typeof analysis === 'object' && 'unifiedGraph' in analysis && analysis.unifiedGraph && typeof analysis.unifiedGraph === 'object' ? analysis.unifiedGraph : undefined;
+        const files = new Set();
+        const dirs = new Set();
+        const isFileLike = (p)=>/\.[a-z0-9]+$/i.test(p);
+        const ignored = (p)=>{
+            const x = p.toLowerCase();
+            return x.includes('/node_modules/') || x.includes('/.git/') || x.includes('/dist/') || x.includes('/build/');
+        };
+        const normalizeToRelative = (raw)=>{
+            const p = raw.replace(/\\/g, '/').trim();
+            if (!p || ignored(p) || !isFileLike(p)) return null;
+            for (const marker of [
+                '/src/',
+                '/app/',
+                '/packages/',
+                '/libs/',
+                '/lib/'
+            ]){
+                const idx = p.lastIndexOf(marker);
+                if (idx >= 0) return p.slice(idx + 1);
+            }
+            if (!/^[a-zA-Z]:\//.test(p) && !p.startsWith('/')) return p;
+            return null;
+        };
+        const addFile = (raw)=>{
+            if (!raw) return;
+            const rel = normalizeToRelative(raw);
+            if (!rel) return;
+            files.add(rel);
+            const parts = rel.split('/').filter(Boolean);
+            for(let i = 1; i < parts.length; i += 1){
+                dirs.add(parts.slice(0, i).join('/'));
+            }
+        };
+        for (const n of graph?.nodes ?? [])addFile(n.id);
+        for (const e of graph?.edges ?? []){
+            addFile(e.from);
+            addFile(e.to);
         }
-    }
-    const sourcePack = await packRes.json().catch(()=>null);
-    const resolvedSourcePack = !packRes.ok || !sourcePack ? {
-        rootHint: 'unavailable',
-        totalTokens: 0,
-        files: []
-    } : sourcePack;
-    const systemPrompt = buildSystemPrompt({
-        result,
-        selectedPaths,
-        sourcePack: resolvedSourcePack
-    });
-    // Call OpenAI with streaming enabled
-    const openaiRes = await fetch(OPENAI_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: OPENAI_MODEL,
-            stream: true,
-            max_tokens: 1024,
-            temperature: 0.3,
-            messages: [
-                {
-                    role: 'system',
-                    content: systemPrompt
-                },
-                ...messages.map((m)=>({
-                        role: m.role,
-                        content: m.content
-                    }))
-            ]
-        })
-    });
-    if (!openaiRes.ok || !openaiRes.body) {
-        const err = await openaiRes.text();
-        console.error('[POST /api/chat] OpenAI error:', err);
-        return new Response('OpenAI request failed', {
-            status: 502
+        const dirEntries = Array.from(dirs).sort((a, b)=>{
+            const ad = a.split('/').length;
+            const bd = b.split('/').length;
+            if (ad !== bd) return ad - bd;
+            return a.localeCompare(b);
+        }).map((path)=>({
+                path,
+                type: 'dir'
+            }));
+        const fileEntries = Array.from(files).sort((a, b)=>a.localeCompare(b)).map((path)=>({
+                path,
+                type: 'file'
+            }));
+        return [
+            ...dirEntries,
+            ...fileEntries
+        ];
+    };
+    const parseTree = async (res)=>{
+        const data = await res.json().catch(()=>null);
+        if (!data || !Array.isArray(data.entries)) return null;
+        return {
+            rootHint: typeof data.rootHint === 'string' ? data.rootHint : 'unknown',
+            entries: data.entries
+        };
+    };
+    try {
+        // Primary path: dedicated copilot source-tree endpoint.
+        const copilotRes = await fetch(`${base}/copilot/${jobId}/source-tree?maxEntries=${encodeURIComponent(maxEntries)}`, {
+            headers
         });
-    }
-    // Transform the OpenAI SSE stream (data: {...}) → plain text stream
-    // so the client hook can simply accumulate raw text chunks
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-        async start (controller) {
-            const reader = openaiRes.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            try {
-                while(true){
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    buffer += decoder.decode(value, {
-                        stream: true
-                    });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() ?? '';
-                    // OpenAI streams lines like: data: {"choices":[{"delta":{"content":"..."}}]}
-                    for (const line of lines){
-                        const trimmed = line.trim();
-                        if (!trimmed.startsWith('data:')) continue;
-                        const json = trimmed.slice(5).trim();
-                        if (json === '[DONE]') continue;
-                        try {
-                            const parsed = JSON.parse(json);
-                            const text = parsed.choices?.[0]?.delta?.content;
-                            if (text) controller.enqueue(encoder.encode(text));
-                        } catch  {
-                        // Skip malformed complete lines. Partial lines are preserved in `buffer`.
-                        }
-                    }
-                }
-                // Flush any final complete line that arrived without trailing newline.
-                const finalLine = buffer.trim();
-                if (finalLine.startsWith('data:')) {
-                    const json = finalLine.slice(5).trim();
-                    if (json && json !== '[DONE]') {
-                        try {
-                            const parsed = JSON.parse(json);
-                            const text = parsed.choices?.[0]?.delta?.content;
-                            if (text) controller.enqueue(encoder.encode(text));
-                        } catch  {
-                        // Ignore incomplete tail.
-                        }
-                    }
-                }
-            } finally{
-                controller.close();
+        const copilotTree = await parseTree(copilotRes);
+        if (copilotRes.ok && copilotTree) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(copilotTree);
+        }
+        // Fallback path: analyze source-tree endpoint for older/copilot-limited backends.
+        const analyzeRes = await fetch(`${base}/analyze/${jobId}/source-tree`, {
+            headers
+        });
+        const analyzeTree = await parseTree(analyzeRes);
+        if (analyzeRes.ok && analyzeTree) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(analyzeTree);
+        }
+        // Last-resort fallback: derive tree directly from analysis result.
+        const analysisRes = await fetch(`${base}/analyze/${jobId}`, {
+            headers
+        });
+        const analysis = await analysisRes.json().catch(()=>null);
+        if (analysisRes.ok && analysis) {
+            const entries = deriveEntriesFromAnalysis(analysis);
+            if (entries.length > 0) {
+                const rootHint = typeof analysis.projectName === 'string' ? analysis.projectName : 'derived';
+                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                    rootHint,
+                    entries
+                });
             }
         }
-    });
-    return new Response(readable, {
-        headers: {
-            'Content-Type': 'text/plain; charset=utf-8',
-            'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no'
+        // Keep chat usable when source-tree is unavailable.
+        if (copilotRes.status === 404 || analyzeRes.status === 404) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                rootHint: 'unavailable',
+                entries: []
+            });
         }
-    });
+        const status = copilotRes.status >= 400 ? copilotRes.status : analyzeRes.status;
+        if (status >= 400) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                message: 'Failed to load source tree'
+            }, {
+                status
+            });
+        }
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            message: 'Failed to load source tree'
+        }, {
+            status: 502
+        });
+    } catch  {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            rootHint: 'unavailable',
+            entries: []
+        });
+    }
 }
 }),
 ];
 
-//# sourceMappingURL=%5Broot-of-the-server%5D__1668ac18._.js.map
+//# sourceMappingURL=%5Broot-of-the-server%5D__101a2646._.js.map

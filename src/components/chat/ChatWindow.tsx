@@ -15,21 +15,89 @@ interface ChatWindowProps {
   jobId:  string
 }
 
+interface SourceTreeResponse {
+  rootHint: string
+  entries: Array<{
+    path: string
+    type: 'dir' | 'file'
+  }>
+}
+
 /**
  * Builds ContextFile list from PipelineResult.
  *
- * Strategy: each unique top-level module becomes one context file.
- * The "content" field is a structured text summary of that module's
- * smells, hotspots, and cycle memberships — the AI gets rich context
- * without needing raw source code.
+ * Strategy: infer repo-relative directories from file nodes in the unified graph
+ * (e.g. "src/auth") so the user can scope the LLM to real source folders.
+ *
+ * Note: tokens are rough estimates; the server will enforce real byte/token caps.
  */
 function buildContextFiles(result: PipelineResult): ContextFile[] {
-  // Collect unique module names from smells + hotspots + cycles
-  const moduleNames = new Set<string>()
+  const dirCounts = new Map<string, number>()
+  const sampleFilesByDir = new Map<string, string[]>()
+  const discoveredFiles = new Set<string>()
 
-  result.smells.forEach((s)    => { if (s.module) moduleNames.add(s.module) })
-  result.hotspots.forEach((h)  => moduleNames.add(h.module))
-  result.cycles.forEach((c)    => c.nodes.forEach((n) => moduleNames.add(n)))
+  const isFileLike = (p: string): boolean => /\.[a-z0-9]+$/i.test(p)
+
+  const isIgnoredPath = (p: string): boolean => {
+    const x = p.toLowerCase()
+    return (
+      x.includes('/.tmp/') ||
+      x.includes('/node_modules/') ||
+      x.includes('/dist/') ||
+      x.includes('/build/') ||
+      x.includes('/coverage/') ||
+      x.includes('/.next/') ||
+      x.includes('/.git/')
+    )
+  }
+
+  const toRepoRelativeFile = (rawPath: string): string | null => {
+    const normalized = rawPath.replace(/\\/g, '/').trim()
+    if (!normalized.includes('/')) return null
+    if (!isFileLike(normalized)) return null
+    if (isIgnoredPath(normalized)) return null
+
+    // Most analyses include absolute paths; strip to a repo-relative anchor.
+    for (const marker of ['/src/', '/app/', '/packages/', '/libs/', '/lib/']) {
+      const idx = normalized.lastIndexOf(marker)
+      if (idx >= 0) return normalized.slice(idx + 1) // keep the anchor segment (e.g. src/...)
+    }
+
+    // If already repo-relative, keep as-is.
+    if (!/^[a-zA-Z]:\//.test(normalized) && !normalized.startsWith('/')) return normalized
+    return null
+  }
+
+  const recordFilePath = (rawPath: string) => {
+    const file = toRepoRelativeFile(rawPath)
+    if (!file) return
+    discoveredFiles.add(file)
+    const parts = file.split('/').filter(Boolean)
+    if (parts.length < 2) return
+
+    // Count this file for every parent directory so folder selection works as a true subtree scope.
+    for (let i = 1; i < parts.length; i += 1) {
+      const dir = parts.slice(0, i).join('/')
+      dirCounts.set(dir, (dirCounts.get(dir) ?? 0) + 1)
+      const samples = sampleFilesByDir.get(dir) ?? []
+      if (samples.length < 3) {
+        samples.push(file)
+        sampleFilesByDir.set(dir, samples)
+      }
+    }
+  }
+
+  for (const n of result.unifiedGraph.nodes) {
+    recordFilePath(n.id ?? '')
+  }
+
+  // Fallback: some graphs may have sparse nodes but useful edge endpoints.
+  if (dirCounts.size === 0) {
+    for (const e of result.unifiedGraph.edges) {
+      recordFilePath(e.from ?? '')
+      recordFilePath(e.to ?? '')
+    }
+  }
 
   // Always include a "full project overview" entry
   const files: ContextFile[] = [
@@ -47,31 +115,111 @@ Cycles: ${result.metrics.cycleCount}, Smells: ${result.smells.length}`,
     },
   ]
 
-  // One file per module
-  for (const name of moduleNames) {
-    const moduleSmells   = result.smells.filter((s) => s.module === name)
-    const moduleHotspot  = result.hotspots.find((h) => h.module === name)
-    const moduleCycles   = result.cycles.filter((c) => c.nodes.includes(name))
+  // One entry per discovered directory in the real source tree.
+  const scopes = Array.from(dirCounts.entries())
+    .sort((a, b) => {
+      const aDepth = a[0].split('/').length
+      const bDepth = b[0].split('/').length
+      if (aDepth !== bDepth) return aDepth - bDepth
+      if (b[1] !== a[1]) return b[1] - a[1]
+      return a[0].localeCompare(b[0])
+    })
+    .map(([scope]) => scope)
 
-    const lines: string[] = [`Module: ${name}`]
+  for (const scope of scopes) {
+    const fileCount = dirCounts.get(scope) ?? 0
+    // Rough estimate for folder context size; backend enforces real caps.
+    const tokens = Math.max(80, Math.min(4500, fileCount * 120))
+    const samples = sampleFilesByDir.get(scope) ?? []
+    files.push({
+      id: scope,
+      label: `${scope} (${fileCount} files)`,
+      tokens,
+      content: `Source scope: ${scope}\nEstimated files: ${fileCount}\nSample files:\n${samples.map((s) => `- ${s}`).join('\n')}`,
+    })
+  }
 
-    if (moduleSmells.length > 0) {
-      lines.push('Smells:')
-      moduleSmells.forEach((s) => lines.push(`  - [${s.severity}] ${s.type}: ${s.message}`))
+  // Include actual file leaves so the context tree mirrors codebase structure exactly.
+  const fileEntries = Array.from(discoveredFiles).sort((a, b) => a.localeCompare(b))
+  for (const filePath of fileEntries) {
+    files.push({
+      id: filePath,
+      label: filePath.split('/').pop() ?? filePath,
+      tokens: 90,
+      content: `Source file: ${filePath}`,
+    })
+  }
+
+  return files
+}
+
+function buildContextFilesFromSourceTree(result: PipelineResult, tree: SourceTreeResponse): ContextFile[] {
+  const files: ContextFile[] = [
+    {
+      id:      '__overview__',
+      label:   'Project overview',
+      tokens:  120,
+      content: `Project: ${result.projectName}
+Language: ${result.detection.languages[0]?.name ?? 'unknown'}
+Framework: ${result.detection.framework ?? 'none'}
+Source root: ${tree.rootHint}
+Overall score: ${result.score.overall}/100
+Modules: ${result.metrics.moduleCount}, Dependencies: ${result.metrics.dependencyCount}
+Cycles: ${result.metrics.cycleCount}, Smells: ${result.smells.length}`,
+    },
+  ]
+
+  const normalized = tree.entries
+    .map((e) => ({ ...e, path: e.path.replace(/\\/g, '/').replace(/^\/+/, '') }))
+    .filter((e) => e.path.length > 0)
+
+  const filePaths = normalized.filter((e) => e.type === 'file').map((e) => e.path)
+  const fileSet = new Set(filePaths)
+
+  // Ensure parent directories exist even if backend response is sparse.
+  const dirSet = new Set(normalized.filter((e) => e.type === 'dir').map((e) => e.path))
+  for (const filePath of filePaths) {
+    const parts = filePath.split('/').filter(Boolean)
+    for (let i = 1; i < parts.length; i += 1) {
+      dirSet.add(parts.slice(0, i).join('/'))
     }
-    if (moduleHotspot) {
-      lines.push(`Hotspot: fan-out ${moduleHotspot.fanOut} (${moduleHotspot.risk} risk)`)
-    }
-    if (moduleCycles.length > 0) {
-      lines.push('Involved in cycles:')
-      moduleCycles.forEach((c) => lines.push(`  - ${c.nodes.join(' → ')}`))
-    }
+  }
 
-    const content = lines.join('\n')
-    // Rough token estimate: ~4 chars per token
-    const tokens  = Math.ceil(content.length / 4)
+  const dirFileCounts = new Map<string, number>()
+  for (const filePath of fileSet) {
+    const parts = filePath.split('/').filter(Boolean)
+    for (let i = 1; i < parts.length; i += 1) {
+      const dir = parts.slice(0, i).join('/')
+      dirFileCounts.set(dir, (dirFileCounts.get(dir) ?? 0) + 1)
+    }
+  }
 
-    files.push({ id: name, label: name, content, tokens })
+  const sortedDirs = Array.from(dirSet).sort((a, b) => {
+    const aDepth = a.split('/').length
+    const bDepth = b.split('/').length
+    if (aDepth !== bDepth) return aDepth - bDepth
+    return a.localeCompare(b)
+  })
+
+  for (const dir of sortedDirs) {
+    const count = dirFileCounts.get(dir) ?? 0
+    if (count === 0) continue
+    files.push({
+      id: dir,
+      label: `${dir} (${count} files)`,
+      tokens: Math.max(80, Math.min(4500, count * 120)),
+      content: `Source scope: ${dir}\nEstimated files: ${count}`,
+    })
+  }
+
+  const sortedFiles = Array.from(fileSet).sort((a, b) => a.localeCompare(b))
+  for (const filePath of sortedFiles) {
+    files.push({
+      id: filePath,
+      label: filePath.split('/').pop() ?? filePath,
+      tokens: 90,
+      content: `Source file: ${filePath}`,
+    })
   }
 
   return files
@@ -82,11 +230,35 @@ export function ChatWindow({ result, jobId }: ChatWindowProps) {
   const { send, cancel, isStreaming }           = useChat()
   const bottomRef                               = useRef<HTMLDivElement>(null)
 
-  // Initialise the session once when the component mounts
+  // Initialise session from exact source tree; fallback to graph-derived scopes.
   useEffect(() => {
-    const files = buildContextFiles(result)
-    initSession(jobId, result.projectName, files)
-  }, [jobId, result, initSession])
+    // Avoid re-fetching context tree on unrelated re-renders.
+    if (session?.jobId === jobId && session.contextFiles.length > 0) return
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/chat/context-tree?jobId=${encodeURIComponent(jobId)}&maxEntries=5000`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const tree = await res.json() as SourceTreeResponse
+        if (!tree || !Array.isArray(tree.entries) || tree.entries.length === 0) {
+          throw new Error('Empty source tree')
+        }
+        if (cancelled) return
+        const files = buildContextFilesFromSourceTree(result, tree)
+        initSession(jobId, result.projectName, files)
+      } catch {
+        if (cancelled) return
+        const files = buildContextFiles(result)
+        initSession(jobId, result.projectName, files)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [jobId, result, initSession, session?.jobId, session?.contextFiles.length])
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {

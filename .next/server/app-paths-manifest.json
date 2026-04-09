@@ -10,6 +10,7 @@
   "/api/analyze/[jobId]/route": "app/api/analyze/[jobId]/route.js",
   "/api/analyze/route": "app/api/analyze/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/chat/context-tree/route": "app/api/chat/context-tree/route.js",
   "/api/chat/route": "app/api/chat/route.js",
   "/api/github/repos/[owner]/[repo]/branches/route": "app/api/github/repos/[owner]/[repo]/branches/route.js",
   "/api/github/repos/route": "app/api/github/repos/route.js",
