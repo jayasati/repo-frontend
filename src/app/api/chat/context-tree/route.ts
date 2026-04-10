@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { serverApiBase } from '@/lib/api/client'
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'jobId is required' }, { status: 400 })
   }
 
-  const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+  const base = serverApiBase()
   const maxEntries = req.nextUrl.searchParams.get('maxEntries') ?? '5000'
 
   const headers: Record<string, string> = {}

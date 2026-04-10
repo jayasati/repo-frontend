@@ -1,5 +1,6 @@
 import { NextRequest }  from 'next/server'
 import { auth }          from '@/auth'
+import { serverApiBase } from '@/lib/api/client'
 import { getAnalysisResult } from '@/lib/api/analyze.api'
 import type { ChatRequest }  from '@/types/chat.types'
 import type { PipelineResult } from '@/types/analysis.types'
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
   const selectedPaths = (selectedIds ?? []).filter((id) => id !== '__overview__')
 
   // Fetch raw source pack for the selected paths (bounded, may truncate)
-  const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+  const base = serverApiBase()
   const packRequestBody = JSON.stringify({
     paths: selectedPaths,
     includeImportClosure: true,

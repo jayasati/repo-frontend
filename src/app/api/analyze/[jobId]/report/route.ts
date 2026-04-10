@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth }                       from '@/auth'
+import { serverApiBase }              from '@/lib/api/client'
 import type { ReportFormat }          from '@/lib/api/analyze.api'
 
 /**
@@ -23,7 +24,7 @@ export async function GET(
     return NextResponse.json({ message: 'Invalid format' }, { status: 400 })
   }
 
-  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/analyze/${jobId}/report?format=${format}`
+  const backendUrl = `${serverApiBase()}/analyze/${jobId}/report?format=${format}`
 
   const headers: Record<string, string> = {}
   if (session.accessToken) {

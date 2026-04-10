@@ -35,9 +35,18 @@ type ApiFetchOptions = Omit<RequestInit, 'body'> & {
 // 🌍 BASE URL (🔥 FINAL FIX)
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * Server-side base URL for the NestJS API.
+ * Uses API_URL (runtime env, not baked at build time) so it resolves
+ * correctly inside Docker (e.g. http://api:3000).
+ */
+export function serverApiBase(): string {
+  return (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/$/, '')
+}
+
 const BASE_URL =
   typeof window === 'undefined'
-    ? process.env.API_URL || 'http://localhost:3000'   // ✅ FIXED
+    ? serverApiBase()
     : '/backend'
 
 // ─────────────────────────────────────────────────────────────

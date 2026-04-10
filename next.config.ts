@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   /**
    * Proxy all /backend/* requests → NestJS API on localhost:3000
    * This avoids CORS issues in the browser and lets us use relative paths

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { auth }         from '@/auth'
+import { serverApiBase } from '@/lib/api/client'
 
 /**
  * GET /api/analyze/:jobId/progress
@@ -25,7 +26,7 @@ export async function GET(
   }
 
   const { jobId } = await params
-  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/analyze/${jobId}/progress`
+  const backendUrl = `${serverApiBase()}/analyze/${jobId}/progress`
 
   const headers: Record<string, string> = {
     Accept:          'text/event-stream',

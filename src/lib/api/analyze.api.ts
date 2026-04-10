@@ -1,5 +1,5 @@
 import type { EnqueueResponse, PipelineResult } from '@/types/analysis.types'
-import { apiFetch } from './client'
+import { apiFetch, serverApiBase } from './client'
 
 // ── Enqueue ───────────────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ export async function downloadReport(
   format:      ReportFormat,
   accessToken: string,
 ): Promise<Response> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+  const base = serverApiBase()
   return fetch(`${base}/analyze/${jobId}/report?format=${format}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
