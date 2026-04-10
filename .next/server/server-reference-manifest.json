@@ -14,8 +14,20 @@
           "exportedName": "$$RSC_SERVER_ACTION_0",
           "filename": "src/app/(dashboard)/components/Topbar.tsx"
         },
+        "app/(dashboard)/chat/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/chat/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/components/Topbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": "src/app/(dashboard)/components/Topbar.tsx"
+        },
         "app/(dashboard)/dashboard/page": {
           "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/components/Topbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "$$RSC_SERVER_ACTION_0",
+          "filename": "src/app/(dashboard)/components/Topbar.tsx"
+        },
+        "app/(dashboard)/graph/[jobId]/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/graph/[jobId]/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/components/Topbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "$$RSC_SERVER_ACTION_0",
           "filename": "src/app/(dashboard)/components/Topbar.tsx"
@@ -42,7 +54,9 @@
       "layer": {
         "app/(dashboard)/analyze/[jobId]/page": "rsc",
         "app/(dashboard)/analyze/page": "rsc",
+        "app/(dashboard)/chat/page": "rsc",
         "app/(dashboard)/dashboard/page": "rsc",
+        "app/(dashboard)/graph/[jobId]/page": "rsc",
         "app/(dashboard)/history/page": "rsc",
         "app/(dashboard)/repositories/page": "rsc",
         "app/(dashboard)/trends/page": "rsc"

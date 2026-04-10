@@ -740,6 +740,10 @@ input:-webkit-autofill:focus {
   min-height: 100vh;
 }
 
+.min-h-\[120px\] {
+  min-height: 120px;
+}
+
 .w-1\.5 {
   width: .375rem;
 }
@@ -871,6 +875,10 @@ input:-webkit-autofill:focus {
 
 .max-w-xs {
   max-width: 20rem;
+}
+
+.max-w-full {
+  max-width: 100%;
 }
 
 .flex-1 {
@@ -1167,6 +1175,11 @@ input:-webkit-autofill:focus {
   border-radius: .75rem;
 }
 
+.rounded-b-lg {
+  border-bottom-right-radius: .5rem;
+  border-bottom-left-radius: .5rem;
+}
+
 .rounded-tl-sm {
   border-top-left-radius: .125rem;
 }
@@ -1373,6 +1386,11 @@ input:-webkit-autofill:focus {
 
 .bg-transparent {
   background-color: rgba(0, 0, 0, 0);
+}
+
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgba(255, 255, 255, var(--tw-bg-opacity, 1));
 }
 
 .p-0 {
@@ -1782,6 +1800,11 @@ input:-webkit-autofill:focus {
 .text-white {
   --tw-text-opacity: 1;
   color: rgba(255, 255, 255, var(--tw-text-opacity, 1));
+}
+
+.underline {
+  -webkit-text-decoration-line: underline;
+  text-decoration-line: underline;
 }
 
 .underline-offset-4 {
