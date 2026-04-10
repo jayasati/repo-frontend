@@ -14,11 +14,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'repoUrl query param is required' }, { status: 400 })
   }
 
-  const limit = Number(req.nextUrl.searchParams.get('limit') ?? '20')
+  const limit  = Number(req.nextUrl.searchParams.get('limit') ?? '20')
+  const cursor = req.nextUrl.searchParams.get('cursor') ?? undefined
 
   try {
-    const entries = await getHistory(repoUrl, limit, session.accessToken)
-    return NextResponse.json(entries)
+    const result = await getHistory(repoUrl, limit, session.accessToken, cursor)
+    return NextResponse.json(result)
   } catch (err) {
     if (err instanceof ApiError) {
       return NextResponse.json({ message: err.message }, { status: err.status })

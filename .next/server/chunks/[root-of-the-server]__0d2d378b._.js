@@ -341,20 +341,25 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$auth$2e$ts__$5b$app$2d$route
 "use strict";
 
 __turbopack_context__.s([
+    "getAggregatedTrend",
+    ()=>getAggregatedTrend,
     "getDiff",
     ()=>getDiff,
     "getHistory",
     ()=>getHistory,
+    "getModuleTrends",
+    ()=>getModuleTrends,
     "getTrend",
     ()=>getTrend
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/api/client.ts [app-route] (ecmascript)");
 ;
-async function getHistory(repoUrl, limit = 20, accessToken) {
+async function getHistory(repoUrl, limit = 20, accessToken, cursor) {
     const params = new URLSearchParams({
         repoUrl,
         limit: String(limit)
     });
+    if (cursor) params.set('cursor', cursor);
     return (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["apiFetch"])(`/history?${params}`, {
         method: 'GET',
         accessToken
@@ -376,6 +381,27 @@ async function getTrend(repoUrl, limit = 30, accessToken) {
         limit: String(limit)
     });
     return (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["apiFetch"])(`/history/trend?${params}`, {
+        method: 'GET',
+        accessToken
+    });
+}
+async function getAggregatedTrend(repoUrl, bucket = 'weekly', limit = 100, accessToken) {
+    const params = new URLSearchParams({
+        repoUrl,
+        bucket,
+        limit: String(limit)
+    });
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["apiFetch"])(`/history/trend/aggregated?${params}`, {
+        method: 'GET',
+        accessToken
+    });
+}
+async function getModuleTrends(repoUrl, limit = 20, accessToken) {
+    const params = new URLSearchParams({
+        repoUrl,
+        limit: String(limit)
+    });
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["apiFetch"])(`/history/trend/modules?${params}`, {
         method: 'GET',
         accessToken
     });

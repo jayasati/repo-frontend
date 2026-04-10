@@ -136,13 +136,19 @@ function HistoryList(param) {
     _s();
     const [entries, setEntries] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
+    const [isLoadMore, setIsLoadMore] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [nextCursor, setNextCursor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [hasMore, setHasMore] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [refreshTick, setRefreshTick] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
+    // Initial load
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "HistoryList.useEffect": ()=>{
             if (!repoUrl) return;
             setIsLoading(true);
             setError(null);
+            setEntries([]);
+            setNextCursor(null);
             fetch("/api/history?repoUrl=".concat(encodeURIComponent(repoUrl), "&limit=").concat(limit, "&_ts=").concat(Date.now())).then({
                 "HistoryList.useEffect": (r)=>r.ok ? r.json() : r.json().then({
                         "HistoryList.useEffect": (b)=>{
@@ -151,7 +157,11 @@ function HistoryList(param) {
                         }
                     }["HistoryList.useEffect"])
             }["HistoryList.useEffect"]).then({
-                "HistoryList.useEffect": (data)=>setEntries(data)
+                "HistoryList.useEffect": (data)=>{
+                    setEntries(data.items);
+                    setNextCursor(data.nextCursor);
+                    setHasMore(data.hasMore);
+                }
             }["HistoryList.useEffect"]).catch({
                 "HistoryList.useEffect": (e)=>setError(String(e))
             }["HistoryList.useEffect"]).finally({
@@ -163,6 +173,7 @@ function HistoryList(param) {
         limit,
         refreshTick
     ]);
+    // Auto-refresh
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "HistoryList.useEffect": ()=>{
             if (!repoUrl) return;
@@ -187,6 +198,41 @@ function HistoryList(param) {
     }["HistoryList.useEffect"], [
         repoUrl
     ]);
+    // Load more (pagination)
+    const loadMore = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "HistoryList.useCallback[loadMore]": ()=>{
+            if (!nextCursor || isLoadMore) return;
+            setIsLoadMore(true);
+            fetch("/api/history?repoUrl=".concat(encodeURIComponent(repoUrl), "&limit=").concat(limit, "&cursor=").concat(encodeURIComponent(nextCursor), "&_ts=").concat(Date.now())).then({
+                "HistoryList.useCallback[loadMore]": (r)=>r.ok ? r.json() : r.json().then({
+                        "HistoryList.useCallback[loadMore]": (b)=>{
+                            var _b_message;
+                            return Promise.reject((_b_message = b.message) !== null && _b_message !== void 0 ? _b_message : 'Failed');
+                        }
+                    }["HistoryList.useCallback[loadMore]"])
+            }["HistoryList.useCallback[loadMore]"]).then({
+                "HistoryList.useCallback[loadMore]": (data)=>{
+                    setEntries({
+                        "HistoryList.useCallback[loadMore]": (prev)=>[
+                                ...prev,
+                                ...data.items
+                            ]
+                    }["HistoryList.useCallback[loadMore]"]);
+                    setNextCursor(data.nextCursor);
+                    setHasMore(data.hasMore);
+                }
+            }["HistoryList.useCallback[loadMore]"]).catch({
+                "HistoryList.useCallback[loadMore]": (e)=>setError(String(e))
+            }["HistoryList.useCallback[loadMore]"]).finally({
+                "HistoryList.useCallback[loadMore]": ()=>setIsLoadMore(false)
+            }["HistoryList.useCallback[loadMore]"]);
+        }
+    }["HistoryList.useCallback[loadMore]"], [
+        repoUrl,
+        limit,
+        nextCursor,
+        isLoadMore
+    ]);
     if (isLoading) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex items-center gap-2 py-8 text-text-muted",
         children: [
@@ -194,7 +240,7 @@ function HistoryList(param) {
                 size: "sm"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 60,
+                lineNumber: 87,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -202,13 +248,13 @@ function HistoryList(param) {
                 children: "Loading history…"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 60,
+                lineNumber: 87,
                 columnNumber: 28
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 59,
+        lineNumber: 86,
         columnNumber: 5
     }, this);
     if (error) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -216,14 +262,14 @@ function HistoryList(param) {
         children: error
     }, void 0, false, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 65,
+        lineNumber: 92,
         columnNumber: 5
     }, this);
     if (entries.length === 0) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$empty$2d$state$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["EmptyState"], {
         message: "No history found for this repository yet."
     }, void 0, false, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 69,
+        lineNumber: 96,
         columnNumber: 5
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -244,15 +290,15 @@ function HistoryList(param) {
                         children: h
                     }, h, false, {
                         fileName: "[project]/src/components/history/HistoryList.tsx",
-                        lineNumber: 77,
+                        lineNumber: 104,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 75,
+                lineNumber: 102,
                 columnNumber: 7
             }, this),
-            entries.map((entry, i)=>{
+            entries.map((entry)=>{
                 const isSelected = selected.some((s)=>s.id === entry.id);
                 var _entry_detectedFramework, _ref;
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -270,7 +316,7 @@ function HistoryList(param) {
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                                    lineNumber: 98,
+                                    lineNumber: 124,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -281,13 +327,13 @@ function HistoryList(param) {
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                                    lineNumber: 103,
+                                    lineNumber: 129,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 97,
+                            lineNumber: 123,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -297,12 +343,12 @@ function HistoryList(param) {
                                 children: entry.overallScore
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                                lineNumber: 112,
+                                lineNumber: 137,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 111,
+                            lineNumber: 136,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -310,7 +356,7 @@ function HistoryList(param) {
                             children: entry.cycleCount
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 118,
+                            lineNumber: 142,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -318,7 +364,7 @@ function HistoryList(param) {
                             children: entry.smellCount
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 123,
+                            lineNumber: 146,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -326,7 +372,7 @@ function HistoryList(param) {
                             children: entry.moduleCount
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 128,
+                            lineNumber: 150,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -334,7 +380,7 @@ function HistoryList(param) {
                             children: (_ref = (_entry_detectedFramework = entry.detectedFramework) !== null && _entry_detectedFramework !== void 0 ? _entry_detectedFramework : entry.detectedLanguage) !== null && _ref !== void 0 ? _ref : '—'
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 131,
+                            lineNumber: 152,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -345,37 +391,63 @@ function HistoryList(param) {
                                 className: "h-3.5 w-3.5"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                                lineNumber: 141,
+                                lineNumber: 161,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 136,
+                            lineNumber: 156,
                             columnNumber: 13
                         }, this)
                     ]
                 }, entry.id, true, {
                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                    lineNumber: 85,
+                    lineNumber: 112,
                     columnNumber: 11
                 }, this);
             }),
+            hasMore && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                onClick: loadMore,
+                disabled: isLoadMore,
+                className: "mt-2 py-2 text-center font-mono text-[12px] text-text-muted hover:text-accent border border-border rounded-lg hover:border-accent/30 transition-colors disabled:opacity-50",
+                children: isLoadMore ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                    className: "flex items-center justify-center gap-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$spinner$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Spinner"], {
+                            size: "sm"
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/history/HistoryList.tsx",
+                            lineNumber: 176,
+                            columnNumber: 15
+                        }, this),
+                        " Loading…"
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/components/history/HistoryList.tsx",
+                    lineNumber: 175,
+                    columnNumber: 13
+                }, this) : 'Load more'
+            }, void 0, false, {
+                fileName: "[project]/src/components/history/HistoryList.tsx",
+                lineNumber: 169,
+                columnNumber: 9
+            }, this),
             selected.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                 className: "font-mono text-[11px] text-text-dim mt-1 text-center",
                 children: selected.length === 1 ? 'Select a second entry to compare' : "Comparing ".concat((_selected_ = selected[0]) === null || _selected_ === void 0 ? void 0 : _selected_.analyzedAt.slice(0, 10), " vs ").concat((_selected_1 = selected[1]) === null || _selected_1 === void 0 ? void 0 : _selected_1.analyzedAt.slice(0, 10))
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 149,
+                lineNumber: 186,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 73,
+        lineNumber: 100,
         columnNumber: 5
     }, this);
 }
-_s(HistoryList, "ZdrS5DnD8XBxUCStOQqFmGgUj88=");
+_s(HistoryList, "6KUrROWSQSIegg1GXgliLOgm7tQ=");
 _c = HistoryList;
 var _c;
 __turbopack_context__.k.register(_c, "HistoryList");
@@ -395,7 +467,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$spinner$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/spinner.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/utils/cn.ts [app-client] (ecmascript)");
 ;
-var _s = __turbopack_context__.k.signature();
+var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
 'use client';
 ;
 ;
@@ -418,6 +490,28 @@ function DeltaCell(param) {
     }, this);
 }
 _c = DeltaCell;
+const statusColor = {
+    improved: 'text-accent',
+    degraded: 'text-ra-red',
+    new: 'text-ra-red',
+    removed: 'text-accent',
+    appeared: 'text-ra-red',
+    resolved: 'text-accent',
+    worsened: 'text-ra-red',
+    formed: 'text-ra-red',
+    broken: 'text-accent'
+};
+const statusIcon = {
+    improved: '↑',
+    degraded: '↓',
+    new: '+',
+    removed: '−',
+    appeared: '!',
+    resolved: '✓',
+    worsened: '↓',
+    formed: '⟳',
+    broken: '✓'
+};
 function DiffView(param) {
     let { fromId, toId } = param;
     _s();
@@ -455,7 +549,7 @@ function DiffView(param) {
                 size: "sm"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/DiffView.tsx",
-                lineNumber: 46,
+                lineNumber: 70,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -463,13 +557,13 @@ function DiffView(param) {
                 children: "Loading diff…"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/DiffView.tsx",
-                lineNumber: 46,
+                lineNumber: 70,
                 columnNumber: 28
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/DiffView.tsx",
-        lineNumber: 45,
+        lineNumber: 69,
         columnNumber: 5
     }, this);
     if (error) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -477,7 +571,7 @@ function DiffView(param) {
         children: error
     }, void 0, false, {
         fileName: "[project]/src/components/history/DiffView.tsx",
-        lineNumber: 51,
+        lineNumber: 75,
         columnNumber: 5
     }, this);
     if (!diff) return null;
@@ -513,6 +607,12 @@ function DiffView(param) {
             value: diff.delta.moduleCount
         }
     ];
+    var _diff_moduleChanges;
+    const hasModuleChanges = ((_diff_moduleChanges = diff.moduleChanges) !== null && _diff_moduleChanges !== void 0 ? _diff_moduleChanges : []).length > 0;
+    var _diff_hotspotChanges;
+    const hasHotspotChanges = ((_diff_hotspotChanges = diff.hotspotChanges) !== null && _diff_hotspotChanges !== void 0 ? _diff_hotspotChanges : []).length > 0;
+    var _diff_cycleChanges;
+    const hasCycleChanges = ((_diff_cycleChanges = diff.cycleChanges) !== null && _diff_cycleChanges !== void 0 ? _diff_cycleChanges : []).length > 0;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "space-y-4 animate-fade-in",
         children: [
@@ -524,7 +624,7 @@ function DiffView(param) {
                         children: new Date(diff.from.analyzedAt).toLocaleDateString()
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 70,
+                        lineNumber: 98,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -532,7 +632,7 @@ function DiffView(param) {
                         children: "→"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 73,
+                        lineNumber: 101,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -540,7 +640,7 @@ function DiffView(param) {
                         children: new Date(diff.to.analyzedAt).toLocaleDateString()
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 74,
+                        lineNumber: 102,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -548,13 +648,13 @@ function DiffView(param) {
                         children: diff.regression ? 'regression' : 'improvement'
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 77,
+                        lineNumber: 105,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/history/DiffView.tsx",
-                lineNumber: 69,
+                lineNumber: 97,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -569,26 +669,26 @@ function DiffView(param) {
                                 children: label
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/DiffView.tsx",
-                                lineNumber: 91,
+                                lineNumber: 119,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DeltaCell, {
                                 value: value
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/DiffView.tsx",
-                                lineNumber: 92,
+                                lineNumber: 120,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, label, true, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 90,
+                        lineNumber: 118,
                         columnNumber: 11
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/src/components/history/DiffView.tsx",
-                lineNumber: 88,
+                lineNumber: 116,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -601,7 +701,7 @@ function DiffView(param) {
                                 children: "Fixed smells"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/DiffView.tsx",
-                                lineNumber: 100,
+                                lineNumber: 128,
                                 columnNumber: 11
                             }, this),
                             diff.fixedSmells.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -609,7 +709,7 @@ function DiffView(param) {
                                 children: "None"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/DiffView.tsx",
-                                lineNumber: 104,
+                                lineNumber: 132,
                                 columnNumber: 15
                             }, this) : diff.fixedSmells.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "px-2 py-1.5 mb-1 rounded bg-accent/8 border border-accent/20 font-mono text-[11px] text-accent",
@@ -619,13 +719,13 @@ function DiffView(param) {
                                     ]
                                 }, s, true, {
                                     fileName: "[project]/src/components/history/DiffView.tsx",
-                                    lineNumber: 106,
+                                    lineNumber: 134,
                                     columnNumber: 15
                                 }, this))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 99,
+                        lineNumber: 127,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -635,7 +735,7 @@ function DiffView(param) {
                                 children: "New smells"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/DiffView.tsx",
-                                lineNumber: 114,
+                                lineNumber: 142,
                                 columnNumber: 11
                             }, this),
                             diff.newSmells.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -643,7 +743,7 @@ function DiffView(param) {
                                 children: "None introduced"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/DiffView.tsx",
-                                lineNumber: 118,
+                                lineNumber: 146,
                                 columnNumber: 15
                             }, this) : diff.newSmells.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "px-2 py-1.5 mb-1 rounded bg-ra-red-dim border border-ra-red/20 font-mono text-[11px] text-ra-red",
@@ -653,33 +753,317 @@ function DiffView(param) {
                                     ]
                                 }, s, true, {
                                     fileName: "[project]/src/components/history/DiffView.tsx",
-                                    lineNumber: 120,
+                                    lineNumber: 148,
                                     columnNumber: 15
                                 }, this))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/DiffView.tsx",
-                        lineNumber: 113,
+                        lineNumber: 141,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/history/DiffView.tsx",
-                lineNumber: 98,
+                lineNumber: 126,
                 columnNumber: 7
+            }, this),
+            hasModuleChanges && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] mb-2",
+                        children: "Module changes"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 159,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "space-y-1",
+                        children: diff.moduleChanges.map((mc)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ModuleChangeRow, {
+                                change: mc
+                            }, mc.module, false, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 164,
+                                columnNumber: 15
+                            }, this))
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 162,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/history/DiffView.tsx",
+                lineNumber: 158,
+                columnNumber: 9
+            }, this),
+            hasHotspotChanges && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] mb-2",
+                        children: "Hotspot changes"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 173,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "space-y-1",
+                        children: diff.hotspotChanges.map((hc)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center justify-between px-3 py-2 bg-bg-surface rounded-lg border border-border",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "font-mono text-[11px] text-text",
+                                        children: hc.module
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/history/DiffView.tsx",
+                                        lineNumber: 179,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex items-center gap-2",
+                                        children: [
+                                            hc.fanOutBefore != null && hc.fanOutAfter != null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "font-mono text-[10px] text-text-dim",
+                                                children: [
+                                                    "fan-out ",
+                                                    hc.fanOutBefore,
+                                                    " → ",
+                                                    hc.fanOutAfter
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                                lineNumber: 182,
+                                                columnNumber: 21
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])('font-mono text-[11px] font-medium', statusColor[hc.status]),
+                                                children: [
+                                                    statusIcon[hc.status],
+                                                    " ",
+                                                    hc.status
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                                lineNumber: 186,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/history/DiffView.tsx",
+                                        lineNumber: 180,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, hc.module, true, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 178,
+                                columnNumber: 15
+                            }, this))
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 176,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/history/DiffView.tsx",
+                lineNumber: 172,
+                columnNumber: 9
+            }, this),
+            hasCycleChanges && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] mb-2",
+                        children: "Cycle changes"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 199,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "space-y-1",
+                        children: diff.cycleChanges.map((cc, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center justify-between px-3 py-2 bg-bg-surface rounded-lg border border-border",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "font-mono text-[11px] text-text truncate max-w-[70%]",
+                                        children: cc.nodes.join(' → ')
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/history/DiffView.tsx",
+                                        lineNumber: 205,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])('font-mono text-[11px] font-medium', statusColor[cc.status]),
+                                        children: [
+                                            statusIcon[cc.status],
+                                            " ",
+                                            cc.status
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/history/DiffView.tsx",
+                                        lineNumber: 208,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, i, true, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 204,
+                                columnNumber: 15
+                            }, this))
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 202,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/history/DiffView.tsx",
+                lineNumber: 198,
+                columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/DiffView.tsx",
-        lineNumber: 67,
+        lineNumber: 95,
         columnNumber: 5
     }, this);
 }
 _s(DiffView, "mHEc1c+ooIamsk9dhXSRAbNmbqE=");
 _c1 = DiffView;
-var _c, _c1;
+/** Expandable row showing per-module smell changes */ function ModuleChangeRow(param) {
+    let { change } = param;
+    _s1();
+    const [expanded, setExpanded] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const mc = change;
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "bg-bg-surface rounded-lg border border-border",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                onClick: ()=>setExpanded(!expanded),
+                className: "w-full flex items-center justify-between px-3 py-2 text-left hover:bg-bg-surface/80 transition-colors",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                        className: "font-mono text-[11px] text-text",
+                        children: mc.module
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 231,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2f$cn$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])('font-mono text-[11px] font-medium', statusColor[mc.status]),
+                                children: [
+                                    statusIcon[mc.status],
+                                    " ",
+                                    mc.status
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 233,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-mono text-[10px] text-text-dim",
+                                children: expanded ? '▾' : '▸'
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 236,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 232,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/history/DiffView.tsx",
+                lineNumber: 227,
+                columnNumber: 7
+            }, this),
+            expanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "px-3 pb-2 grid grid-cols-2 gap-2",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            mc.removedSmells.length > 0 && mc.removedSmells.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "font-mono text-[10px] text-accent py-0.5",
+                                    children: [
+                                        "✓ fixed: ",
+                                        s
+                                    ]
+                                }, s, true, {
+                                    fileName: "[project]/src/components/history/DiffView.tsx",
+                                    lineNumber: 246,
+                                    columnNumber: 15
+                                }, this)),
+                            mc.removedSmells.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "font-mono text-[10px] text-text-dim py-0.5",
+                                children: "No smells fixed"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 249,
+                                columnNumber: 15
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 244,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            mc.addedSmells.length > 0 && mc.addedSmells.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "font-mono text-[10px] text-ra-red py-0.5",
+                                    children: [
+                                        "✕ new: ",
+                                        s
+                                    ]
+                                }, s, true, {
+                                    fileName: "[project]/src/components/history/DiffView.tsx",
+                                    lineNumber: 254,
+                                    columnNumber: 15
+                                }, this)),
+                            mc.addedSmells.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "font-mono text-[10px] text-text-dim py-0.5",
+                                children: "No new smells"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/history/DiffView.tsx",
+                                lineNumber: 257,
+                                columnNumber: 15
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/history/DiffView.tsx",
+                        lineNumber: 252,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/history/DiffView.tsx",
+                lineNumber: 243,
+                columnNumber: 9
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/src/components/history/DiffView.tsx",
+        lineNumber: 226,
+        columnNumber: 5
+    }, this);
+}
+_s1(ModuleChangeRow, "DuL5jiiQQFgbn7gBKAyxwS/H4Ek=");
+_c2 = ModuleChangeRow;
+var _c, _c1, _c2;
 __turbopack_context__.k.register(_c, "DeltaCell");
 __turbopack_context__.k.register(_c1, "DiffView");
+__turbopack_context__.k.register(_c2, "ModuleChangeRow");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link                    from 'next/link'
 import { ArrowUpRight }        from 'lucide-react'
 import { cn }                  from '@/lib/utils/cn'
 import { Spinner }             from '@/components/ui/spinner'
 import { EmptyState }          from '@/components/ui/empty-state'
-import type { HistoryEntry }   from '@/types/history.types'
+import type { HistoryEntry, PaginatedHistory } from '@/types/history.types'
 
 interface HistoryListProps {
   repoUrl:         string
@@ -27,23 +27,34 @@ function scoreBg(n: number) {
 }
 
 export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: HistoryListProps) {
-  const [entries,   setEntries]   = useState<HistoryEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error,     setError]     = useState<string | null>(null)
+  const [entries,    setEntries]    = useState<HistoryEntry[]>([])
+  const [isLoading,  setIsLoading]  = useState(true)
+  const [isLoadMore, setIsLoadMore] = useState(false)
+  const [error,      setError]      = useState<string | null>(null)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasMore,    setHasMore]    = useState(false)
   const [refreshTick, setRefreshTick] = useState(0)
 
+  // Initial load
   useEffect(() => {
     if (!repoUrl) return
     setIsLoading(true)
     setError(null)
+    setEntries([])
+    setNextCursor(null)
 
     fetch(`/api/history?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`)
       .then((r) => r.ok ? r.json() : r.json().then((b: {message?: string}) => Promise.reject(b.message ?? 'Failed')))
-      .then((data: HistoryEntry[]) => setEntries(data))
+      .then((data: PaginatedHistory) => {
+        setEntries(data.items)
+        setNextCursor(data.nextCursor)
+        setHasMore(data.hasMore)
+      })
       .catch((e: unknown) => setError(String(e)))
       .finally(() => setIsLoading(false))
   }, [repoUrl, limit, refreshTick])
 
+  // Auto-refresh
   useEffect(() => {
     if (!repoUrl) return
     const onFocus = () => setRefreshTick((n) => n + 1)
@@ -54,6 +65,22 @@ export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: Histo
       window.clearInterval(timer)
     }
   }, [repoUrl])
+
+  // Load more (pagination)
+  const loadMore = useCallback(() => {
+    if (!nextCursor || isLoadMore) return
+    setIsLoadMore(true)
+
+    fetch(`/api/history?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&cursor=${encodeURIComponent(nextCursor)}&_ts=${Date.now()}`)
+      .then((r) => r.ok ? r.json() : r.json().then((b: {message?: string}) => Promise.reject(b.message ?? 'Failed')))
+      .then((data: PaginatedHistory) => {
+        setEntries((prev) => [...prev, ...data.items])
+        setNextCursor(data.nextCursor)
+        setHasMore(data.hasMore)
+      })
+      .catch((e: unknown) => setError(String(e)))
+      .finally(() => setIsLoadMore(false))
+  }, [repoUrl, limit, nextCursor, isLoadMore])
 
   if (isLoading) return (
     <div className="flex items-center gap-2 py-8 text-text-muted">
@@ -78,7 +105,7 @@ export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: Histo
         ))}
       </div>
 
-      {entries.map((entry, i) => {
+      {entries.map((entry) => {
         const isSelected = selected.some((s) => s.id === entry.id)
 
         return (
@@ -93,7 +120,6 @@ export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: Histo
             )}
             onClick={() => onSelectForDiff(entry)}
           >
-            {/* Date */}
             <div>
               <p className="font-mono text-[12px] text-text">
                 {new Date(entry.analyzedAt).toLocaleDateString('en-US', {
@@ -107,32 +133,26 @@ export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: Histo
               </p>
             </div>
 
-            {/* Score */}
             <div className={cn('rounded px-1.5 py-0.5 text-center', scoreBg(entry.overallScore))}>
               <span className={cn('font-mono text-[13px] font-medium', scoreColor(entry.overallScore))}>
                 {entry.overallScore}
               </span>
             </div>
 
-            {/* Cycles */}
             <span className={cn('font-mono text-[12px]', entry.cycleCount > 0 ? 'text-ra-red' : 'text-text-muted')}>
               {entry.cycleCount}
             </span>
 
-            {/* Smells */}
             <span className={cn('font-mono text-[12px]', entry.smellCount > 0 ? 'text-ra-amber' : 'text-text-muted')}>
               {entry.smellCount}
             </span>
 
-            {/* Modules */}
             <span className="font-mono text-[12px] text-text-muted">{entry.moduleCount}</span>
 
-            {/* Framework */}
             <span className="font-mono text-[11px] text-text-dim truncate">
               {entry.detectedFramework ?? entry.detectedLanguage ?? '—'}
             </span>
 
-            {/* View link */}
             <Link
               href={`/analyze/${entry.id}`}
               onClick={(e) => e.stopPropagation()}
@@ -143,6 +163,23 @@ export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: Histo
           </div>
         )
       })}
+
+      {/* Load more button */}
+      {hasMore && (
+        <button
+          onClick={loadMore}
+          disabled={isLoadMore}
+          className="mt-2 py-2 text-center font-mono text-[12px] text-text-muted hover:text-accent border border-border rounded-lg hover:border-accent/30 transition-colors disabled:opacity-50"
+        >
+          {isLoadMore ? (
+            <span className="flex items-center justify-center gap-2">
+              <Spinner size="sm" /> Loading…
+            </span>
+          ) : (
+            'Load more'
+          )}
+        </button>
+      )}
 
       {/* Diff selection hint */}
       {selected.length > 0 && (

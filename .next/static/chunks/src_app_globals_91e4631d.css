@@ -545,6 +545,10 @@ input:-webkit-autofill:focus {
   margin-left: .75rem;
 }
 
+.mr-1 {
+  margin-right: .25rem;
+}
+
 .mr-1\.5 {
   margin-right: .375rem;
 }
@@ -642,10 +646,6 @@ input:-webkit-autofill:focus {
 
 .h-12 {
   height: 3rem;
-}
-
-.h-16 {
-  height: 4rem;
 }
 
 .h-2 {
@@ -815,6 +815,10 @@ input:-webkit-autofill:focus {
 
 .max-w-5xl {
   max-width: 64rem;
+}
+
+.max-w-\[70\%\] {
+  max-width: 70%;
 }
 
 .max-w-\[82\%\] {
@@ -1022,6 +1026,12 @@ input:-webkit-autofill:focus {
   margin-bottom: calc(.125rem * var(--tw-space-y-reverse));
 }
 
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(.25rem * var(--tw-space-y-reverse));
+}
+
 .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(.375rem * calc(1 - var(--tw-space-y-reverse)));
@@ -1192,6 +1202,10 @@ input:-webkit-autofill:focus {
 .border-border-2 {
   --tw-border-opacity: 1;
   border-color: rgba(63, 63, 70, var(--tw-border-opacity, 1));
+}
+
+.border-current {
+  border-color: currentColor;
 }
 
 .border-ra-amber\/30 {
@@ -1660,6 +1674,10 @@ input:-webkit-autofill:focus {
   letter-spacing: .1em;
 }
 
+.tracking-wider {
+  letter-spacing: .05em;
+}
+
 .text-accent {
   --tw-text-opacity: 1;
   color: rgba(163, 230, 53, var(--tw-text-opacity, 1));
@@ -1714,8 +1732,16 @@ input:-webkit-autofill:focus {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.opacity-100 {
+  opacity: 1;
+}
+
 .opacity-25 {
   opacity: .25;
+}
+
+.opacity-50 {
+  opacity: .5;
 }
 
 .opacity-60 {
@@ -1795,6 +1821,10 @@ input:-webkit-autofill:focus {
   border-color: rgba(163, 230, 53, var(--tw-border-opacity, 1));
 }
 
+.hover\:border-accent\/30:hover {
+  border-color: rgba(163, 230, 53, .3);
+}
+
 .hover\:border-border-2:hover {
   --tw-border-opacity: 1;
   border-color: rgba(63, 63, 70, var(--tw-border-opacity, 1));
@@ -1820,6 +1850,10 @@ input:-webkit-autofill:focus {
 .hover\:bg-bg-surface:hover {
   --tw-bg-opacity: 1;
   background-color: rgba(17, 17, 19, var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-bg-surface\/80:hover {
+  background-color: rgba(17, 17, 19, .8);
 }
 
 .hover\:bg-bg-surface2:hover {
@@ -1858,6 +1892,10 @@ input:-webkit-autofill:focus {
 .hover\:underline:hover {
   -webkit-text-decoration-line: underline;
   text-decoration-line: underline;
+}
+
+.hover\:opacity-75:hover {
+  opacity: .75;
 }
 
 .focus\:border-accent:focus {

@@ -1,14 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { cn }                  from '@/lib/utils/cn'
-import { Spinner }             from '@/components/ui/spinner'
-import { EmptyState }          from '@/components/ui/empty-state'
-import type { TrendReport, TrendPoint } from '@/types/history.types'
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, ReferenceLine,
+} from 'recharts'
+import { cn }          from '@/lib/utils/cn'
+import { Spinner }     from '@/components/ui/spinner'
+import { EmptyState }  from '@/components/ui/empty-state'
+import type { TrendReport, TrendPoint, TrendDirection } from '@/types/history.types'
 
 interface TrendChartProps {
   repoUrl: string
   limit: number
+  /** Optional target score line */
+  targetScore?: number
 }
 
 const trendColor = {
@@ -23,48 +29,49 @@ const trendLabel = {
   stable:     '→ Stable',
 } as const
 
-/** Map TrendPoint scores to SVG polyline coordinates inside a 300×60 viewport */
-function buildPolyline(points: TrendPoint[], width = 300, height = 60, padding = 6): string {
-  if (points.length < 2) return ''
-  const scores = points.map((p) => p.overallScore)
-  const min    = Math.min(...scores)
-  const max    = Math.max(...scores)
-  const range  = max - min || 1
-  const xStep  = (width - padding * 2) / (points.length - 1)
+const trendArrow = {
+  improving: '↑',
+  degrading: '↓',
+  stable:    '→',
+} as const
 
-  return points.map((p, i) => {
-    const x = padding + i * xStep
-    const y = padding + (1 - (p.overallScore - min) / range) * (height - padding * 2)
-    return `${x.toFixed(1)},${y.toFixed(1)}`
-  }).join(' ')
+/** Metric line config */
+const METRICS = [
+  { key: 'overallScore',    label: 'Overall',    color: '#A3E635', defaultOn: true },
+  { key: 'modularityScore', label: 'Modularity', color: '#60A5FA', defaultOn: false },
+  { key: 'couplingScore',   label: 'Coupling',   color: '#C084FC', defaultOn: false },
+  { key: 'smellsScore',     label: 'Smells',     color: '#FB923C', defaultOn: false },
+] as const
+
+type MetricKey = typeof METRICS[number]['key']
+
+function TrendBadge({ direction, label }: { direction: TrendDirection; label: string }) {
+  return (
+    <span className={cn('font-mono text-[10px]', trendColor[direction])}>
+      {trendArrow[direction]} {label}
+    </span>
+  )
 }
 
-function pointToCoords(
-  point: TrendPoint,
-  index: number,
-  points: TrendPoint[],
-  width = 300,
-  height = 60,
-  padding = 6,
-): { x: number; y: number } {
-  if (points.length <= 1) {
-    return { x: width / 2, y: height / 2 };
-  }
-  const scores = points.map((p) => p.overallScore);
-  const min = Math.min(...scores);
-  const max = Math.max(...scores);
-  const range = max - min || 1;
-  const xStep = (width - padding * 2) / (points.length - 1);
-  const x = padding + index * xStep;
-  const y = padding + (1 - (point.overallScore - min) / range) * (height - padding * 2);
-  return { x, y };
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-export function TrendChart({ repoUrl, limit }: TrendChartProps) {
+function formatDateFull(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
+export function TrendChart({ repoUrl, limit, targetScore }: TrendChartProps) {
   const [report,    setReport]    = useState<TrendReport | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error,     setError]     = useState<string | null>(null)
   const [refreshTick, setRefreshTick] = useState(0)
+  const [activeMetrics, setActiveMetrics] = useState<Set<MetricKey>>(
+    new Set(METRICS.filter((m) => m.defaultOn).map((m) => m.key)),
+  )
 
   useEffect(() => {
     if (!repoUrl) return
@@ -89,6 +96,19 @@ export function TrendChart({ repoUrl, limit }: TrendChartProps) {
     }
   }, [repoUrl])
 
+  const toggleMetric = (key: MetricKey) => {
+    setActiveMetrics((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        // Don't allow deselecting all
+        if (next.size > 1) next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }
+
   if (isLoading) return (
     <div className="flex items-center gap-2 py-6 text-text-muted">
       <Spinner size="sm" /><span className="font-mono text-[12px]">Loading trend…</span>
@@ -101,11 +121,17 @@ export function TrendChart({ repoUrl, limit }: TrendChartProps) {
     <EmptyState message="Not enough history to show a trend yet. Analyze this repo a few more times." />
   )
 
-  const polyline = buildPolyline(report.points)
   const firstScore = report.points[0]?.overallScore ?? 0
   const lastScore = report.points.at(-1)?.overallScore ?? 0
   const deltaScore = lastScore - firstScore
-  const scores = report.points.map((p) => p.overallScore)
+  const mt = report.metricTrends
+
+  // Prepare chart data with formatted dates
+  const chartData = report.points.map((p) => ({
+    ...p,
+    date: formatDate(p.analyzedAt),
+    dateFull: formatDateFull(p.analyzedAt),
+  }))
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -131,71 +157,106 @@ export function TrendChart({ repoUrl, limit }: TrendChartProps) {
         </span>
       </div>
 
-      {/* SVG sparkline */}
-      <div className="bg-bg-surface border border-border rounded-lg px-4 py-3">
-        <svg
-          viewBox="0 0 300 60"
-          className="w-full h-16"
-          preserveAspectRatio="none"
-        >
-          {/* Zero line at 60 (bottom) */}
-          <line x1="0" y1="54" x2="300" y2="54" stroke="#27272A" strokeWidth="0.5" />
-
-          {/* Area fill */}
-          {polyline && (
-            <polyline
-              points={`6,54 ${polyline} 294,54`}
-              fill={report.trend === 'improving' ? 'rgba(163,230,53,0.06)' : 'rgba(248,113,113,0.06)'}
-              stroke="none"
-            />
-          )}
-
-          {/* Line */}
-          {polyline && (
-            <polyline
-              points={polyline}
-              fill="none"
-              stroke={report.trend === 'improving' ? '#A3E635' : report.trend === 'degrading' ? '#F87171' : '#71717A'}
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
-
-          {/* Dots — only show first, last, best, worst */}
-          {report.points.map((p, i) => {
-            const isFirst = i === 0
-            const isLast  = i === report.points.length - 1
-            const isBest  = p.overallScore === Math.max(...scores)
-            const isWorst = p.overallScore === Math.min(...scores)
-            if (!isFirst && !isLast && !isBest && !isWorst) return null
-
-            const coords = pointToCoords(p, i, report.points)
-
-            return (
-              <circle
-                key={i}
-                cx={coords.x}
-                cy={coords.y}
-                r="2.5"
-                fill={isBest ? '#A3E635' : isWorst ? '#F87171' : '#71717A'}
-              />
-            )
-          })}
-        </svg>
-
-        {/* X-axis labels */}
-        <div className="flex justify-between mt-1">
-          <span className="font-mono text-[10px] text-text-dim">
-            {new Date(report.points[0]?.analyzedAt ?? '').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </span>
-          <span className="font-mono text-[10px] text-text-dim">
-            {new Date(report.points.at(-1)?.analyzedAt ?? '').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </span>
+      {/* Per-metric trend badges */}
+      {mt && (
+        <div className="flex items-center gap-4 flex-wrap border border-border rounded-lg px-3 py-2 bg-bg-surface">
+          <span className="font-mono text-[10px] text-text-dim uppercase tracking-wider mr-1">Metric Trends</span>
+          <TrendBadge direction={mt.modularity} label="Modularity" />
+          <TrendBadge direction={mt.coupling}   label="Coupling" />
+          <TrendBadge direction={mt.smells}     label="Smells Score" />
+          <TrendBadge direction={mt.cycles}     label="Cycles" />
+          <TrendBadge direction={mt.smellCount} label="Smell Count" />
         </div>
+      )}
+
+      {/* Metric toggle buttons */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="font-mono text-[10px] text-text-dim uppercase tracking-wider">Show:</span>
+        {METRICS.map((m) => (
+          <button
+            key={m.key}
+            onClick={() => toggleMetric(m.key)}
+            className={cn(
+              'px-2 py-1 rounded font-mono text-[11px] border transition-colors',
+              activeMetrics.has(m.key)
+                ? 'border-current opacity-100'
+                : 'border-border text-text-dim opacity-50 hover:opacity-75',
+            )}
+            style={activeMetrics.has(m.key) ? { color: m.color, borderColor: m.color } : undefined}
+          >
+            {m.label}
+          </button>
+        ))}
       </div>
 
-      {/* Score breakdown series */}
+      {/* Interactive Recharts line chart */}
+      <div className="bg-bg-surface border border-border rounded-lg px-4 py-3">
+        <ResponsiveContainer width="100%" height={240}>
+          <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 10, fill: '#71717A', fontFamily: 'monospace' }}
+              tickLine={false}
+              axisLine={{ stroke: '#27272A' }}
+            />
+            <YAxis
+              domain={[0, 100]}
+              tick={{ fontSize: 10, fill: '#71717A', fontFamily: 'monospace' }}
+              tickLine={false}
+              axisLine={{ stroke: '#27272A' }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#18181B',
+                border: '1px solid #3F3F46',
+                borderRadius: '8px',
+                fontFamily: 'monospace',
+                fontSize: '11px',
+              }}
+              labelFormatter={(_, payload) => {
+                const point = payload?.[0]?.payload
+                return point?.dateFull ?? ''
+              }}
+            />
+
+            {/* Target score reference line */}
+            {targetScore != null && (
+              <ReferenceLine
+                y={targetScore}
+                stroke="#A3E635"
+                strokeDasharray="6 3"
+                strokeOpacity={0.4}
+                label={{
+                  value: `Target: ${targetScore}`,
+                  position: 'right',
+                  fill: '#A3E635',
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                }}
+              />
+            )}
+
+            {/* Metric lines */}
+            {METRICS.map((m) =>
+              activeMetrics.has(m.key) ? (
+                <Line
+                  key={m.key}
+                  type="monotone"
+                  dataKey={m.key}
+                  name={m.label}
+                  stroke={m.color}
+                  strokeWidth={m.key === 'overallScore' ? 2 : 1.5}
+                  dot={{ r: 3, fill: m.color }}
+                  activeDot={{ r: 5 }}
+                />
+              ) : null,
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Score breakdown table with per-column trend arrows */}
       <div className="overflow-x-auto">
         <table className="w-full text-left min-w-[480px]" style={{ tableLayout: 'fixed' }}>
           <colgroup>
@@ -208,11 +269,22 @@ export function TrendChart({ repoUrl, limit }: TrendChartProps) {
           </colgroup>
           <thead>
             <tr>
-              {['Date', 'Score', 'Modularity', 'Coupling', 'Cycles', 'Smells'].map((h) => (
-                <th key={h} className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2 pr-3">
-                  {h}
-                </th>
-              ))}
+              <th className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2 pr-3">Date</th>
+              <th className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2 pr-3">
+                Score {mt && <span className={trendColor[mt.overall]}>{trendArrow[mt.overall]}</span>}
+              </th>
+              <th className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2 pr-3">
+                Modularity {mt && <span className={trendColor[mt.modularity]}>{trendArrow[mt.modularity]}</span>}
+              </th>
+              <th className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2 pr-3">
+                Coupling {mt && <span className={trendColor[mt.coupling]}>{trendArrow[mt.coupling]}</span>}
+              </th>
+              <th className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2 pr-3">
+                Cycles {mt && <span className={trendColor[mt.cycles]}>{trendArrow[mt.cycles]}</span>}
+              </th>
+              <th className="font-mono text-[10px] text-text-dim uppercase tracking-[0.08em] pb-2">
+                Smells {mt && <span className={trendColor[mt.smellCount]}>{trendArrow[mt.smellCount]}</span>}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">

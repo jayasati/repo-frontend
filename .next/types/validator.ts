@@ -263,6 +263,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/api/history/trend/aggregated/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/history/trend/aggregated">> = Specific
+  const handler = {} as typeof import("../../src/app/api/history/trend/aggregated/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/api/history/trend/modules/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/history/trend/modules">> = Specific
+  const handler = {} as typeof import("../../src/app/api/history/trend/modules/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/api/history/trend/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/history/trend">> = Specific

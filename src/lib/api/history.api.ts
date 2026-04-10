@@ -1,4 +1,4 @@
-import type { HistoryEntry, AnalysisDiff, TrendReport } from '@/types/history.types'
+import type { PaginatedHistory, AnalysisDiff, TrendReport, AggregatedTrendReport, BucketSize, ModuleTrendReport } from '@/types/history.types'
 import { apiFetch } from './client'
 
 /**
@@ -10,9 +10,11 @@ export async function getHistory(
   repoUrl:     string,
   limit        = 20,
   accessToken: string,
-): Promise<HistoryEntry[]> {
+  cursor?:     string,
+): Promise<PaginatedHistory> {
   const params = new URLSearchParams({ repoUrl, limit: String(limit) })
-  return apiFetch<HistoryEntry[]>(`/history?${params}`, {
+  if (cursor) params.set('cursor', cursor)
+  return apiFetch<PaginatedHistory>(`/history?${params}`, {
     method: 'GET',
     accessToken,
   })
@@ -45,6 +47,39 @@ export async function getTrend(
 ): Promise<TrendReport> {
   const params = new URLSearchParams({ repoUrl, limit: String(limit) })
   return apiFetch<TrendReport>(`/history/trend?${params}`, {
+    method: 'GET',
+    accessToken,
+  })
+}
+
+/**
+ * GET /history/trend/aggregated?repoUrl=&bucket=&limit=
+ * Returns time-bucketed (daily/weekly/monthly) aggregated trend data.
+ */
+export async function getAggregatedTrend(
+  repoUrl:     string,
+  bucket:      BucketSize = 'weekly',
+  limit        = 100,
+  accessToken: string,
+): Promise<AggregatedTrendReport> {
+  const params = new URLSearchParams({ repoUrl, bucket, limit: String(limit) })
+  return apiFetch<AggregatedTrendReport>(`/history/trend/aggregated?${params}`, {
+    method: 'GET',
+    accessToken,
+  })
+}
+
+/**
+ * GET /history/trend/modules?repoUrl=&limit=
+ * Returns per-module smell trends over time.
+ */
+export async function getModuleTrends(
+  repoUrl:     string,
+  limit        = 20,
+  accessToken: string,
+): Promise<ModuleTrendReport> {
+  const params = new URLSearchParams({ repoUrl, limit: String(limit) })
+  return apiFetch<ModuleTrendReport>(`/history/trend/modules?${params}`, {
     method: 'GET',
     accessToken,
   })
