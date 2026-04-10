@@ -1,7 +1,6 @@
 {
   "/(dashboard)/analyze/[jobId]/page": "app/(dashboard)/analyze/[jobId]/page.js",
   "/(dashboard)/analyze/page": "app/(dashboard)/analyze/page.js",
-  "/(dashboard)/chat/page": "app/(dashboard)/chat/page.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
   "/(dashboard)/history/page": "app/(dashboard)/history/page.js",
   "/(dashboard)/repositories/page": "app/(dashboard)/repositories/page.js",
@@ -10,8 +9,11 @@
   "/api/analyze/[jobId]/route": "app/api/analyze/[jobId]/route.js",
   "/api/analyze/route": "app/api/analyze/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/github/repos/[owner]/[repo]/branches/route": "app/api/github/repos/[owner]/[repo]/branches/route.js",
   "/api/github/repos/route": "app/api/github/repos/route.js",
   "/api/history/route": "app/api/history/route.js",
+  "/api/history/target/route": "app/api/history/target/route.js",
+  "/api/history/trend/modules/route": "app/api/history/trend/modules/route.js",
   "/api/history/trend/route": "app/api/history/trend/route.js",
   "/page": "app/page.js"
 }

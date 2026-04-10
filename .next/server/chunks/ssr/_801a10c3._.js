@@ -140,16 +140,18 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
         limit,
         refreshTick
     ]);
-    // Auto-refresh
+    // Refresh on window focus, throttled to once per 60 seconds
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (!repoUrl) return;
-        const onFocus = ()=>setRefreshTick((n)=>n + 1);
-        const timer = window.setInterval(()=>setRefreshTick((n)=>n + 1), 8000);
-        window.addEventListener('focus', onFocus);
-        return ()=>{
-            window.removeEventListener('focus', onFocus);
-            window.clearInterval(timer);
+        let lastRefresh = Date.now();
+        const onFocus = ()=>{
+            if (Date.now() - lastRefresh > 60_000) {
+                lastRefresh = Date.now();
+                setRefreshTick((n)=>n + 1);
+            }
         };
+        window.addEventListener('focus', onFocus);
+        return ()=>window.removeEventListener('focus', onFocus);
     }, [
         repoUrl
     ]);
@@ -178,7 +180,7 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                 size: "sm"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 87,
+                lineNumber: 89,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -186,13 +188,13 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                 children: "Loading history…"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 87,
+                lineNumber: 89,
                 columnNumber: 28
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 86,
+        lineNumber: 88,
         columnNumber: 5
     }, this);
     if (error) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -200,14 +202,14 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
         children: error
     }, void 0, false, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 92,
+        lineNumber: 94,
         columnNumber: 5
     }, this);
     if (entries.length === 0) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$empty$2d$state$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EmptyState"], {
         message: "No history found for this repository yet."
     }, void 0, false, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 96,
+        lineNumber: 98,
         columnNumber: 5
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -228,12 +230,12 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                         children: h
                     }, h, false, {
                         fileName: "[project]/src/components/history/HistoryList.tsx",
-                        lineNumber: 104,
+                        lineNumber: 106,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 102,
+                lineNumber: 104,
                 columnNumber: 7
             }, this),
             entries.map((entry)=>{
@@ -253,7 +255,7 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                                    lineNumber: 124,
+                                    lineNumber: 126,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -264,13 +266,13 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                                    lineNumber: 129,
+                                    lineNumber: 131,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 123,
+                            lineNumber: 125,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -280,12 +282,12 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                                 children: entry.overallScore
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                                lineNumber: 137,
+                                lineNumber: 139,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 136,
+                            lineNumber: 138,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -293,7 +295,7 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                             children: entry.cycleCount
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 142,
+                            lineNumber: 144,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -301,7 +303,7 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                             children: entry.smellCount
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 146,
+                            lineNumber: 148,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -309,7 +311,7 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                             children: entry.moduleCount
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 150,
+                            lineNumber: 152,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -317,7 +319,7 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                             children: entry.detectedFramework ?? entry.detectedLanguage ?? '—'
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 152,
+                            lineNumber: 154,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -328,18 +330,18 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                                 className: "h-3.5 w-3.5"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                                lineNumber: 161,
+                                lineNumber: 163,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 156,
+                            lineNumber: 158,
                             columnNumber: 13
                         }, this)
                     ]
                 }, entry.id, true, {
                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                    lineNumber: 112,
+                    lineNumber: 114,
                     columnNumber: 11
                 }, this);
             }),
@@ -354,19 +356,19 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                             size: "sm"
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/HistoryList.tsx",
-                            lineNumber: 176,
+                            lineNumber: 178,
                             columnNumber: 15
                         }, this),
                         " Loading…"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/history/HistoryList.tsx",
-                    lineNumber: 175,
+                    lineNumber: 177,
                     columnNumber: 13
                 }, this) : 'Load more'
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 169,
+                lineNumber: 171,
                 columnNumber: 9
             }, this),
             selected.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -374,13 +376,13 @@ function HistoryList({ repoUrl, limit, onSelectForDiff, selected }) {
                 children: selected.length === 1 ? 'Select a second entry to compare' : `Comparing ${selected[0]?.analyzedAt.slice(0, 10)} vs ${selected[1]?.analyzedAt.slice(0, 10)}`
             }, void 0, false, {
                 fileName: "[project]/src/components/history/HistoryList.tsx",
-                lineNumber: 186,
+                lineNumber: 188,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/HistoryList.tsx",
-        lineNumber: 100,
+        lineNumber: 102,
         columnNumber: 5
     }, this);
 }

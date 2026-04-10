@@ -1,7 +1,8 @@
 'use client'
 
 import { useState }         from 'react'
-import { Download, MessageSquare } from 'lucide-react'
+import { Download, MessageSquare, Network } from 'lucide-react'
+import { ShareButton }            from '@/components/analysis/ShareButton'
 import { useRouter }          from 'next/navigation'
 import { toast }              from 'sonner'
 
@@ -115,6 +116,7 @@ export function AnalyzeResultsView({ result, jobId }: AnalyzeResultsViewProps) {
 
         {/* Action buttons */}
         <div className="flex flex-col gap-2 flex-shrink-0">
+          <ShareButton jobId={jobId} />
           <Button
             variant="ghost"
             size="sm"
@@ -123,6 +125,15 @@ export function AnalyzeResultsView({ result, jobId }: AnalyzeResultsViewProps) {
           >
             <MessageSquare className="h-3 w-3" />
             Chat
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(`/graph/${jobId}`)}
+            className="font-mono text-[11px] gap-1.5"
+          >
+            <Network className="h-3 w-3" />
+            Graph
           </Button>
           {(['markdown', 'html', 'json'] as const).map((fmt) => (
             <Button

@@ -54,16 +54,18 @@ export function HistoryList({ repoUrl, limit, onSelectForDiff, selected }: Histo
       .finally(() => setIsLoading(false))
   }, [repoUrl, limit, refreshTick])
 
-  // Auto-refresh
+  // Refresh on window focus, throttled to once per 60 seconds
   useEffect(() => {
     if (!repoUrl) return
-    const onFocus = () => setRefreshTick((n) => n + 1)
-    const timer = window.setInterval(() => setRefreshTick((n) => n + 1), 8000)
-    window.addEventListener('focus', onFocus)
-    return () => {
-      window.removeEventListener('focus', onFocus)
-      window.clearInterval(timer)
+    let lastRefresh = Date.now()
+    const onFocus = () => {
+      if (Date.now() - lastRefresh > 60_000) {
+        lastRefresh = Date.now()
+        setRefreshTick((n) => n + 1)
+      }
     }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [repoUrl])
 
   // Load more (pagination)

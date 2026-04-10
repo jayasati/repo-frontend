@@ -1212,7 +1212,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         size: 100
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 73,
+                        lineNumber: 74,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1223,7 +1223,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 children: result.projectName
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 76,
+                                lineNumber: 77,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1234,7 +1234,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                         children: detection.languages[0].name
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                        lineNumber: 81,
+                                        lineNumber: 82,
                                         columnNumber: 15
                                     }, this),
                                     detection.framework && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -1242,7 +1242,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                         children: detection.framework
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                        lineNumber: 84,
+                                        lineNumber: 85,
                                         columnNumber: 15
                                     }, this),
                                     detection.orm && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -1250,13 +1250,13 @@ function AnalyzeResultsView({ result, jobId }) {
                                         children: detection.orm
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                        lineNumber: 87,
+                                        lineNumber: 88,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 79,
+                                lineNumber: 80,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1284,24 +1284,24 @@ function AnalyzeResultsView({ result, jobId }) {
                                                 children: val
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                                lineNumber: 102,
+                                                lineNumber: 103,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, label, true, {
                                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                        lineNumber: 97,
+                                        lineNumber: 98,
                                         columnNumber: 15
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 91,
+                                lineNumber: 92,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 75,
+                        lineNumber: 76,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1317,14 +1317,14 @@ function AnalyzeResultsView({ result, jobId }) {
                                         className: "h-3 w-3"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                        lineNumber: 124,
+                                        lineNumber: 125,
                                         columnNumber: 13
                                     }, this),
                                     "Chat"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 118,
+                                lineNumber: 119,
                                 columnNumber: 11
                             }, this),
                             [
@@ -1342,7 +1342,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                             className: "h-3 w-3"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                            lineNumber: 136,
+                                            lineNumber: 137,
                                             columnNumber: 15
                                         }, this),
                                         ".",
@@ -1350,19 +1350,19 @@ function AnalyzeResultsView({ result, jobId }) {
                                     ]
                                 }, fmt, true, {
                                     fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                    lineNumber: 128,
+                                    lineNumber: 129,
                                     columnNumber: 13
                                 }, this))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 117,
+                        lineNumber: 118,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 72,
+                lineNumber: 73,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1371,20 +1371,20 @@ function AnalyzeResultsView({ result, jobId }) {
                         title: "Detection"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 145,
+                        lineNumber: 146,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$DetectionChips$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DetectionChips"], {
                         detection: detection
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 146,
+                        lineNumber: 147,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 144,
+                lineNumber: 145,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1393,20 +1393,20 @@ function AnalyzeResultsView({ result, jobId }) {
                         title: "Health report"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 151,
+                        lineNumber: 152,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$HealthGrid$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["HealthGrid"], {
                         health: health
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 152,
+                        lineNumber: 153,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 150,
+                lineNumber: 151,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1415,7 +1415,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         title: "Architecture metrics"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 157,
+                        lineNumber: 158,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1427,7 +1427,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 unit: "packages"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 159,
+                                lineNumber: 160,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$MetricCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MetricCard"], {
@@ -1436,7 +1436,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 unit: "edges"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 160,
+                                lineNumber: 161,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$MetricCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MetricCard"], {
@@ -1446,7 +1446,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 highlight: metrics.cycleCount > 0 ? 'red' : 'green'
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 161,
+                                lineNumber: 162,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$MetricCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MetricCard"], {
@@ -1455,7 +1455,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 unit: "per module"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 163,
+                                lineNumber: 164,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$MetricCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MetricCard"], {
@@ -1464,7 +1464,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 unit: "per module"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 164,
+                                lineNumber: 165,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$MetricCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MetricCard"], {
@@ -1474,7 +1474,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 highlight: scoreHighlight(100 - metrics.maxFanOut * 5)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 165,
+                                lineNumber: 166,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$MetricCard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MetricCard"], {
@@ -1483,19 +1483,19 @@ function AnalyzeResultsView({ result, jobId }) {
                                 unit: "coupling"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 167,
+                                lineNumber: 168,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 158,
+                        lineNumber: 159,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 156,
+                lineNumber: 157,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1505,7 +1505,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         count: smells.length
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 173,
+                        lineNumber: 174,
                         columnNumber: 9
                     }, this),
                     smells.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$empty$2d$state$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EmptyState"], {
@@ -1513,7 +1513,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         variant: "success"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 175,
+                        lineNumber: 176,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-col gap-2",
@@ -1521,18 +1521,18 @@ function AnalyzeResultsView({ result, jobId }) {
                                 smell: s
                             }, i, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 176,
+                                lineNumber: 177,
                                 columnNumber: 72
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 176,
+                        lineNumber: 177,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 172,
+                lineNumber: 173,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1542,7 +1542,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         count: cycles.length
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 182,
+                        lineNumber: 183,
                         columnNumber: 9
                     }, this),
                     cycles.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$empty$2d$state$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EmptyState"], {
@@ -1550,7 +1550,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         variant: "success"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 184,
+                        lineNumber: 185,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-col gap-2",
@@ -1558,18 +1558,18 @@ function AnalyzeResultsView({ result, jobId }) {
                                 cycle: c
                             }, i, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 185,
+                                lineNumber: 186,
                                 columnNumber: 72
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 185,
+                        lineNumber: 186,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 181,
+                lineNumber: 182,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1579,7 +1579,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         count: hotspots.length
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 191,
+                        lineNumber: 192,
                         columnNumber: 9
                     }, this),
                     hotspots.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$empty$2d$state$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EmptyState"], {
@@ -1587,7 +1587,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         variant: "success"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 193,
+                        lineNumber: 194,
                         columnNumber: 13
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-col gap-2",
@@ -1595,18 +1595,18 @@ function AnalyzeResultsView({ result, jobId }) {
                                 hotspot: h
                             }, i, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 194,
+                                lineNumber: 195,
                                 columnNumber: 74
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 194,
+                        lineNumber: 195,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 190,
+                lineNumber: 191,
                 columnNumber: 7
             }, this),
             diagrams && Object.values(diagrams).some(Boolean) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1615,7 +1615,7 @@ function AnalyzeResultsView({ result, jobId }) {
                         title: "PlantUML diagrams"
                     }, void 0, false, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 201,
+                        lineNumber: 202,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1626,7 +1626,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 content: diagrams.componentDiagram
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 204,
+                                lineNumber: 205,
                                 columnNumber: 15
                             }, this),
                             diagrams.classDiagram && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$DiagramBlock$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DiagramBlock"], {
@@ -1634,7 +1634,7 @@ function AnalyzeResultsView({ result, jobId }) {
                                 content: diagrams.classDiagram
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 207,
+                                lineNumber: 208,
                                 columnNumber: 15
                             }, this),
                             diagrams.sequenceDiagram && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$analysis$2f$DiagramBlock$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DiagramBlock"], {
@@ -1642,25 +1642,25 @@ function AnalyzeResultsView({ result, jobId }) {
                                 content: diagrams.sequenceDiagram
                             }, void 0, false, {
                                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                                lineNumber: 210,
+                                lineNumber: 211,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                        lineNumber: 202,
+                        lineNumber: 203,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-                lineNumber: 200,
+                lineNumber: 201,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/analysis/AnalyzeResultsView.tsx",
-        lineNumber: 69,
+        lineNumber: 70,
         columnNumber: 5
     }, this);
 }

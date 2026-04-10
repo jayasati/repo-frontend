@@ -161,7 +161,7 @@ function TrendBadge({ direction, label }) {
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/TrendChart.tsx",
-        lineNumber: 50,
+        lineNumber: 52,
         columnNumber: 5
     }, this);
 }
@@ -180,7 +180,7 @@ function formatDateFull(dateStr) {
         minute: '2-digit'
     });
 }
-function TrendChart({ repoUrl, limit, targetScore }) {
+function TrendChart({ repoUrl, limit, targetScore, bucket }) {
     const [report, setReport] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isLoading, setIsLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -190,10 +190,45 @@ function TrendChart({ repoUrl, limit, targetScore }) {
         if (!repoUrl) return;
         setIsLoading(true);
         setError(null);
-        fetch(`/api/history/trend?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`).then((r)=>r.ok ? r.json() : r.json().then((b)=>Promise.reject(b.message ?? 'Failed'))).then((d)=>setReport(d)).catch((e)=>setError(String(e))).finally(()=>setIsLoading(false));
+        const url = bucket ? `/api/history/trend/aggregated?repoUrl=${encodeURIComponent(repoUrl)}&bucket=${bucket}&limit=${limit}&_ts=${Date.now()}` : `/api/history/trend?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`;
+        fetch(url).then((r)=>r.ok ? r.json() : r.json().then((b)=>Promise.reject(b.message ?? 'Failed'))).then((d)=>{
+            // Normalize aggregated response into TrendReport shape for the chart
+            if ('bucket' in d) {
+                const agg = d;
+                const fakeReport = {
+                    repoUrl: agg.repoUrl,
+                    trend: agg.trend,
+                    metricTrends: {
+                        overall: agg.trend,
+                        modularity: 'stable',
+                        coupling: 'stable',
+                        smells: 'stable',
+                        cycles: 'stable',
+                        smellCount: 'stable'
+                    },
+                    avgScore: agg.points.length > 0 ? agg.points.reduce((s, p)=>s + p.avgOverallScore, 0) / agg.points.length : 0,
+                    bestScore: agg.points.length > 0 ? Math.max(...agg.points.map((p)=>p.avgOverallScore)) : 0,
+                    worstScore: agg.points.length > 0 ? Math.min(...agg.points.map((p)=>p.avgOverallScore)) : 0,
+                    points: agg.points.map((p, i)=>({
+                            id: String(i),
+                            analyzedAt: p.bucketStart,
+                            overallScore: Math.round(p.avgOverallScore),
+                            modularityScore: Math.round(p.avgModularityScore),
+                            couplingScore: Math.round(p.avgCouplingScore),
+                            smellsScore: Math.round(p.avgSmellsScore),
+                            cycleCount: Math.round(p.avgCycleCount),
+                            smellCount: Math.round(p.avgSmellCount)
+                        }))
+                };
+                setReport(fakeReport);
+            } else {
+                setReport(d);
+            }
+        }).catch((e)=>setError(String(e))).finally(()=>setIsLoading(false));
     }, [
         repoUrl,
         limit,
+        bucket,
         refreshTick
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
@@ -227,7 +262,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                 size: "sm"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 114,
+                lineNumber: 146,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -235,13 +270,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                 children: "Loading trend…"
             }, void 0, false, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 114,
+                lineNumber: 146,
                 columnNumber: 28
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/TrendChart.tsx",
-        lineNumber: 113,
+        lineNumber: 145,
         columnNumber: 5
     }, this);
     if (error) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -249,14 +284,14 @@ function TrendChart({ repoUrl, limit, targetScore }) {
         children: error
     }, void 0, false, {
         fileName: "[project]/src/components/history/TrendChart.tsx",
-        lineNumber: 118,
+        lineNumber: 150,
         columnNumber: 21
     }, this);
     if (!report || report.points.length < 2) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$empty$2d$state$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EmptyState"], {
         message: "Not enough history to show a trend yet. Analyze this repo a few more times."
     }, void 0, false, {
         fileName: "[project]/src/components/history/TrendChart.tsx",
-        lineNumber: 121,
+        lineNumber: 153,
         columnNumber: 5
     }, this);
     const firstScore = report.points[0]?.overallScore ?? 0;
@@ -280,7 +315,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         children: trendLabel[report.trend]
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 140,
+                        lineNumber: 172,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -292,13 +327,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 children: report.avgScore.toFixed(1)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 144,
+                                lineNumber: 176,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 143,
+                        lineNumber: 175,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -310,13 +345,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 children: report.bestScore
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 147,
+                                lineNumber: 179,
                                 columnNumber: 16
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 146,
+                        lineNumber: 178,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -328,13 +363,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 children: report.worstScore
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 150,
+                                lineNumber: 182,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 149,
+                        lineNumber: 181,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -345,7 +380,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 152,
+                        lineNumber: 184,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -360,19 +395,19 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 156,
+                                lineNumber: 188,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 155,
+                        lineNumber: 187,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 139,
+                lineNumber: 171,
                 columnNumber: 7
             }, this),
             mt && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -383,7 +418,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         children: "Metric Trends"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 163,
+                        lineNumber: 195,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(TrendBadge, {
@@ -391,7 +426,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         label: "Modularity"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 164,
+                        lineNumber: 196,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(TrendBadge, {
@@ -399,7 +434,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         label: "Coupling"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 165,
+                        lineNumber: 197,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(TrendBadge, {
@@ -407,7 +442,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         label: "Smells Score"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 166,
+                        lineNumber: 198,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(TrendBadge, {
@@ -415,7 +450,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         label: "Cycles"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 167,
+                        lineNumber: 199,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(TrendBadge, {
@@ -423,13 +458,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         label: "Smell Count"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 168,
+                        lineNumber: 200,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 162,
+                lineNumber: 194,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -440,7 +475,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                         children: "Show:"
                     }, void 0, false, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 174,
+                        lineNumber: 206,
                         columnNumber: 9
                     }, this),
                     METRICS.map((m)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -453,13 +488,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                             children: m.label
                         }, m.key, false, {
                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                            lineNumber: 176,
+                            lineNumber: 208,
                             columnNumber: 11
                         }, this))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 173,
+                lineNumber: 205,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -481,7 +516,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 stroke: "#27272A"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 196,
+                                lineNumber: 228,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$XAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["XAxis"], {
@@ -497,7 +532,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 197,
+                                lineNumber: 229,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["YAxis"], {
@@ -516,7 +551,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 203,
+                                lineNumber: 235,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Tooltip"], {
@@ -533,7 +568,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 209,
+                                lineNumber: 241,
                                 columnNumber: 13
                             }, this),
                             targetScore != null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$ReferenceLine$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferenceLine"], {
@@ -550,7 +585,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 225,
+                                lineNumber: 257,
                                 columnNumber: 15
                             }, this),
                             METRICS.map((m)=>activeMetrics.has(m.key) ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Line$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Line"], {
@@ -568,23 +603,23 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, m.key, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 243,
+                                    lineNumber: 275,
                                     columnNumber: 17
                                 }, this) : null)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                        lineNumber: 195,
+                        lineNumber: 227,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                    lineNumber: 194,
+                    lineNumber: 226,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 193,
+                lineNumber: 225,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -603,7 +638,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 263,
+                                    lineNumber: 295,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("col", {
@@ -612,7 +647,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 264,
+                                    lineNumber: 296,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("col", {
@@ -621,7 +656,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 265,
+                                    lineNumber: 297,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("col", {
@@ -630,7 +665,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 266,
+                                    lineNumber: 298,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("col", {
@@ -639,7 +674,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 267,
+                                    lineNumber: 299,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("col", {
@@ -648,13 +683,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 268,
+                                    lineNumber: 300,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                            lineNumber: 262,
+                            lineNumber: 294,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
@@ -665,7 +700,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                         children: "Date"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                                        lineNumber: 272,
+                                        lineNumber: 304,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -677,13 +712,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                                 children: trendArrow[mt.overall]
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                                lineNumber: 274,
+                                                lineNumber: 306,
                                                 columnNumber: 30
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                                        lineNumber: 273,
+                                        lineNumber: 305,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -695,13 +730,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                                 children: trendArrow[mt.modularity]
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                                lineNumber: 277,
+                                                lineNumber: 309,
                                                 columnNumber: 35
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                                        lineNumber: 276,
+                                        lineNumber: 308,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -713,13 +748,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                                 children: trendArrow[mt.coupling]
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                                lineNumber: 280,
+                                                lineNumber: 312,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                                        lineNumber: 279,
+                                        lineNumber: 311,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -731,13 +766,13 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                                 children: trendArrow[mt.cycles]
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                                lineNumber: 283,
+                                                lineNumber: 315,
                                                 columnNumber: 31
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                                        lineNumber: 282,
+                                        lineNumber: 314,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -749,24 +784,24 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                                 children: trendArrow[mt.smellCount]
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                                lineNumber: 286,
+                                                lineNumber: 318,
                                                 columnNumber: 31
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/history/TrendChart.tsx",
-                                        lineNumber: 285,
+                                        lineNumber: 317,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                                lineNumber: 271,
+                                lineNumber: 303,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                            lineNumber: 270,
+                            lineNumber: 302,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -785,7 +820,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                             })
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                                            lineNumber: 293,
+                                            lineNumber: 325,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -797,7 +832,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                             children: p.overallScore
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                                            lineNumber: 296,
+                                            lineNumber: 328,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -805,7 +840,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                             children: p.modularityScore
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                                            lineNumber: 303,
+                                            lineNumber: 335,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -813,7 +848,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                             children: p.couplingScore
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                                            lineNumber: 304,
+                                            lineNumber: 336,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -821,7 +856,7 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                             children: p.cycleCount
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                                            lineNumber: 305,
+                                            lineNumber: 337,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -829,35 +864,35 @@ function TrendChart({ repoUrl, limit, targetScore }) {
                                             children: p.smellCount
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                                            lineNumber: 308,
+                                            lineNumber: 340,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, p.id, true, {
                                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                                    lineNumber: 292,
+                                    lineNumber: 324,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/history/TrendChart.tsx",
-                            lineNumber: 290,
+                            lineNumber: 322,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/history/TrendChart.tsx",
-                    lineNumber: 261,
+                    lineNumber: 293,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/history/TrendChart.tsx",
-                lineNumber: 260,
+                lineNumber: 292,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/history/TrendChart.tsx",
-        lineNumber: 137,
+        lineNumber: 169,
         columnNumber: 5
     }, this);
 }
@@ -916,10 +951,18 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trending$2d$up$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__TrendingUp$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/trending-up.js [app-ssr] (ecmascript) <export default as TrendingUp>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$target$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Target$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/target.js [app-ssr] (ecmascript) <export default as Target>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$save$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Save$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/save.js [app-ssr] (ecmascript) <export default as Save>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$history$2f$TrendChart$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/history/TrendChart.tsx [app-ssr] (ecmascript)");
+(()=>{
+    const e = new Error("Cannot find module '@/components/history/ModuleTrends'");
+    e.code = 'MODULE_NOT_FOUND';
+    throw e;
+})();
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$repo$2d$url$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/repo-url.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$last$2d$analyzed$2d$repo$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/last-analyzed-repo.ts [app-ssr] (ecmascript)");
 'use client';
+;
 ;
 ;
 ;
@@ -930,10 +973,51 @@ function TrendsPage() {
     const [repoUrl, setRepoUrl] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [input, setInput] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [limit, setLimit] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(30);
+    // Target score
+    const [targetScore, setTargetScore] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(undefined);
+    const [targetInput, setTargetInput] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
+    const [targetSaving, setTargetSaving] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    // Bucket selector
+    const [bucket, setBucket] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('raw');
     const handleSearch = ()=>{
         const url = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$repo$2d$url$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["normalizeGithubRepoUrl"])(input);
         if (url) setRepoUrl(url);
     };
+    // Fetch target when repoUrl changes
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (!repoUrl) return;
+        fetch(`/api/history/target?repoUrl=${encodeURIComponent(repoUrl)}`).then((r)=>r.ok ? r.json() : null).then((data)=>{
+            if (data?.targetScore) {
+                setTargetScore(data.targetScore);
+                setTargetInput(String(data.targetScore));
+            } else {
+                setTargetScore(undefined);
+                setTargetInput('');
+            }
+        }).catch(()=>{});
+    }, [
+        repoUrl
+    ]);
+    const saveTarget = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
+        const val = Number(targetInput);
+        if (!repoUrl || isNaN(val) || val < 0 || val > 100) return;
+        setTargetSaving(true);
+        fetch('/api/history/target', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                repoUrl,
+                targetScore: val
+            })
+        }).then((r)=>{
+            if (r.ok) setTargetScore(val);
+        }).finally(()=>setTargetSaving(false));
+    }, [
+        repoUrl,
+        targetInput
+    ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         const lastRepo = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$last$2d$analyzed$2d$repo$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getLastAnalyzedRepo"])();
         if (!lastRepo) return;
@@ -951,7 +1035,7 @@ function TrendsPage() {
                         children: "Trends"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 29,
+                        lineNumber: 70,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -959,7 +1043,7 @@ function TrendsPage() {
                         children: "Score trends"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 30,
+                        lineNumber: 71,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -967,17 +1051,17 @@ function TrendsPage() {
                         children: "Track architecture health over time for any repository."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 31,
+                        lineNumber: 72,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                lineNumber: 28,
+                lineNumber: 69,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex gap-2 mb-6",
+                className: "flex gap-2 mb-4",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-1 border border-border-2 rounded-lg overflow-hidden bg-bg-surface focus-within:border-accent transition-colors",
@@ -989,14 +1073,14 @@ function TrendsPage() {
                                         className: "h-3.5 w-3.5 mr-1.5"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                                        lineNumber: 37,
+                                        lineNumber: 79,
                                         columnNumber: 13
                                     }, this),
                                     "github.com /"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                                lineNumber: 36,
+                                lineNumber: 78,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1009,22 +1093,22 @@ function TrendsPage() {
                                 spellCheck: false
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                                lineNumber: 40,
+                                lineNumber: 82,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 35,
+                        lineNumber: 77,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         onClick: handleSearch,
                         className: "px-4 py-2.5 bg-accent text-black rounded-lg font-mono text-[12px] font-medium hover:bg-accent/90 transition-colors",
-                        children: "Load →"
+                        children: "Load"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 50,
+                        lineNumber: 92,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1038,7 +1122,7 @@ function TrendsPage() {
                                 children: "30"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                                lineNumber: 62,
+                                lineNumber: 104,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1046,7 +1130,7 @@ function TrendsPage() {
                                 children: "60"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                                lineNumber: 63,
+                                lineNumber: 105,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1054,28 +1138,149 @@ function TrendsPage() {
                                 children: "120"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                                lineNumber: 64,
+                                lineNumber: 106,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 56,
+                        lineNumber: 98,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                lineNumber: 34,
+                lineNumber: 76,
                 columnNumber: 7
             }, this),
-            repoUrl ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$history$2f$TrendChart$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TrendChart"], {
-                repoUrl: repoUrl,
-                limit: limit
-            }, void 0, false, {
+            repoUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "flex items-center gap-3 mb-6 flex-wrap",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-1.5",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-mono text-[10px] text-text-dim uppercase tracking-wider",
+                                children: "View:"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                lineNumber: 115,
+                                columnNumber: 13
+                            }, this),
+                            [
+                                'raw',
+                                'daily',
+                                'weekly',
+                                'monthly'
+                            ].map((b)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: ()=>setBucket(b),
+                                    className: `px-2 py-1 rounded font-mono text-[11px] border transition-colors ${bucket === b ? 'border-accent text-accent bg-accent/10' : 'border-border text-text-dim hover:text-text'}`,
+                                    children: b === 'raw' ? 'All points' : b
+                                }, b, false, {
+                                    fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                    lineNumber: 117,
+                                    columnNumber: 15
+                                }, this))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                        lineNumber: 114,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex-1"
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                        lineNumber: 131,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-1.5",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$target$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Target$3e$__["Target"], {
+                                className: "h-3.5 w-3.5 text-text-dim"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                lineNumber: 135,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-mono text-[10px] text-text-dim uppercase tracking-wider",
+                                children: "Target:"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                lineNumber: 136,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "number",
+                                min: 0,
+                                max: 100,
+                                value: targetInput,
+                                onChange: (e)=>setTargetInput(e.target.value),
+                                onKeyDown: (e)=>e.key === 'Enter' && saveTarget(),
+                                placeholder: "80",
+                                className: "w-14 px-2 py-1 rounded border border-border bg-bg-surface font-mono text-[12px] text-text text-center outline-none focus:border-accent"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                lineNumber: 137,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: saveTarget,
+                                disabled: targetSaving,
+                                className: "p-1 rounded hover:bg-accent/10 text-text-dim hover:text-accent transition-colors disabled:opacity-50",
+                                title: "Save target",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$save$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Save$3e$__["Save"], {
+                                    className: "h-3.5 w-3.5"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                    lineNumber: 153,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                                lineNumber: 147,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                        lineNumber: 134,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                lineNumber: 69,
-                columnNumber: 11
+                lineNumber: 112,
+                columnNumber: 9
+            }, this),
+            repoUrl ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "space-y-8",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$history$2f$TrendChart$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TrendChart"], {
+                        repoUrl: repoUrl,
+                        limit: limit,
+                        targetScore: targetScore,
+                        bucket: bucket === 'raw' ? undefined : bucket
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                        lineNumber: 161,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(ModuleTrends, {
+                        repoUrl: repoUrl,
+                        limit: limit
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                        lineNumber: 167,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
+                lineNumber: 160,
+                columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex flex-col items-center justify-center py-16 gap-3 text-center",
                 children: [
@@ -1083,35 +1288,35 @@ function TrendsPage() {
                         className: "h-8 w-8 text-text-dim"
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 72,
-                        columnNumber: 13
+                        lineNumber: 171,
+                        columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "text-[14px] text-text-muted",
                         children: "Enter a repository URL above to see its score trend."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 73,
-                        columnNumber: 13
+                        lineNumber: 172,
+                        columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                         className: "font-mono text-[11px] text-text-dim",
                         children: "Requires at least 2 analyses in history."
                     }, void 0, false, {
                         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                        lineNumber: 74,
-                        columnNumber: 13
+                        lineNumber: 173,
+                        columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-                lineNumber: 71,
-                columnNumber: 11
+                lineNumber: 170,
+                columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/trends/page.tsx",
-        lineNumber: 27,
+        lineNumber: 68,
         columnNumber: 5
     }, this);
 }

@@ -214,8 +214,6 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next-auth/index.js [app-route] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$providers$2f$credentials$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next-auth/providers/credentials.js [app-route] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$node_modules$2f40$auth$2f$core$2f$providers$2f$credentials$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-auth/node_modules/@auth/core/providers/credentials.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$providers$2f$github$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next-auth/providers/github.js [app-route] (ecmascript) <locals>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$node_modules$2f40$auth$2f$core$2f$providers$2f$github$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-auth/node_modules/@auth/core/providers/github.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v3/external.js [app-route] (ecmascript) <export * as z>");
 /**
  * The `authorize` function runs server-side inside the Next.js process.
@@ -230,13 +228,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$
 ;
 ;
 ;
-;
 // ── Validation schema for credentials ───────────────────────────────────────
 const credentialsSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].object({
     email: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().email('Invalid email'),
     password: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1, 'Password is required')
 });
 const { handlers, signIn, signOut, auth } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["default"])({
+    trustHost: true,
     /**
    * Custom pages — NextAuth will redirect to these instead of its built-in UI.
    */ pages: {
@@ -262,70 +260,67 @@ const { handlers, signIn, signOut, auth } = (0, __TURBOPACK__imported__module__$
                 password: {
                     label: 'Password',
                     type: 'password'
+                },
+                /** Internal: bootstrap session after Nest GitHub OAuth redirect */ nestJwt: {
+                    label: 'Bootstrap',
+                    type: 'text'
                 }
             },
             async authorize (credentials) {
-                // 1. Validate inputs before hitting the backend
+                const nestJwt = typeof credentials?.nestJwt === 'string' ? credentials.nestJwt.trim() : '';
+                if (nestJwt.length > 0) {
+                    try {
+                        const user = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$auth$2e$api$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getMe"])(nestJwt);
+                        return {
+                            id: user.id,
+                            email: user.email,
+                            role: user.role,
+                            accessToken: nestJwt,
+                            githubLinked: user.githubLinked === true
+                        };
+                    } catch (err) {
+                        console.error('[NextAuth] nestJwt bootstrap error:', err);
+                        return null;
+                    }
+                }
                 const parsed = credentialsSchema.safeParse(credentials);
                 if (!parsed.success) return null;
                 try {
-                    // 2. Call POST /auth/login on the NestJS backend
                     const { accessToken } = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$auth$2e$api$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["loginUser"])(parsed.data);
-                    // 3. Fetch the user profile with the returned token
                     const user = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$auth$2e$api$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getMe"])(accessToken);
-                    // 4. Return the user object — NextAuth stores it in the JWT
                     return {
                         id: user.id,
                         email: user.email,
                         role: user.role,
-                        accessToken
+                        accessToken,
+                        githubLinked: user.githubLinked === true
                     };
                 } catch (err) {
                     if (err instanceof __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$api$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["ApiError"]) {
-                        // Return null tells NextAuth the credentials were rejected.
-                        // The error message surfaces via the `error` search param on /login.
                         return null;
                     }
-                    // Unexpected errors (network, etc.) — also return null
                     console.error('[NextAuth] authorize error:', err);
                     return null;
                 }
             }
-        }),
-        // ── GitHub OAuth (optional — requires GITHUB_CLIENT_ID / SECRET in .env) ─
-        ...process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? [
-            (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$node_modules$2f40$auth$2f$core$2f$providers$2f$github$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"])({
-                clientId: process.env.GITHUB_CLIENT_ID,
-                clientSecret: process.env.GITHUB_CLIENT_SECRET
-            })
-        ] : []
+        })
     ],
     callbacks: {
-        /**
-     * JWT callback — runs whenever a JWT is created or updated.
-     * On initial sign-in (`user` is populated), we copy our custom fields.
-     */ async jwt ({ token, user, account }) {
+        async jwt ({ token, user }) {
             if (user) {
                 token.id = user.id ?? '';
                 token.role = user.role ?? 'user';
                 token.accessToken = user.accessToken ?? '';
-            }
-            // Capture GitHub OAuth token when user signs in with GitHub provider.
-            // This lets the GitHub repo picker call the GitHub API directly.
-            if (account?.provider === 'github' && account.access_token) {
-                token.githubAccessToken = account.access_token;
+                token.githubLinked = 'githubLinked' in user && typeof user.githubLinked === 'boolean' ? user.githubLinked : undefined;
             }
             return token;
         },
-        /**
-     * Session callback — shapes what `useSession()` returns to the client.
-     * Never expose the raw JWT token — only the fields the UI actually needs.
-     */ async session ({ session, token }) {
+        async session ({ session, token }) {
             session.user.id = token.id;
             session.user.role = token.role;
             session.accessToken = token.accessToken;
-            if (token.githubAccessToken) {
-                session.githubAccessToken = token.githubAccessToken;
+            if (typeof token.githubLinked === 'boolean') {
+                session.githubLinked = token.githubLinked;
             }
             return session;
         }

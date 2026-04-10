@@ -8,13 +8,15 @@ import {
 import { cn }          from '@/lib/utils/cn'
 import { Spinner }     from '@/components/ui/spinner'
 import { EmptyState }  from '@/components/ui/empty-state'
-import type { TrendReport, TrendPoint, TrendDirection } from '@/types/history.types'
+import type { TrendReport, TrendPoint, TrendDirection, BucketSize, AggregatedTrendReport } from '@/types/history.types'
 
 interface TrendChartProps {
   repoUrl: string
   limit: number
   /** Optional target score line */
   targetScore?: number
+  /** If set, fetches aggregated data instead of raw points */
+  bucket?: BucketSize
 }
 
 const trendColor = {
@@ -64,7 +66,7 @@ function formatDateFull(dateStr: string) {
   })
 }
 
-export function TrendChart({ repoUrl, limit, targetScore }: TrendChartProps) {
+export function TrendChart({ repoUrl, limit, targetScore, bucket }: TrendChartProps) {
   const [report,    setReport]    = useState<TrendReport | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error,     setError]     = useState<string | null>(null)
@@ -77,23 +79,60 @@ export function TrendChart({ repoUrl, limit, targetScore }: TrendChartProps) {
     if (!repoUrl) return
     setIsLoading(true)
     setError(null)
+    setReport(null) // Reset to avoid stale data during bucket switches
 
-    fetch(`/api/history/trend?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`)
+    const url = bucket
+      ? `/api/history/trend/aggregated?repoUrl=${encodeURIComponent(repoUrl)}&bucket=${bucket}&limit=${limit}&_ts=${Date.now()}`
+      : `/api/history/trend?repoUrl=${encodeURIComponent(repoUrl)}&limit=${limit}&_ts=${Date.now()}`
+
+    fetch(url)
       .then((r) => r.ok ? r.json() : r.json().then((b: {message?: string}) => Promise.reject(b.message ?? 'Failed')))
-      .then((d: TrendReport) => setReport(d))
+      .then((d: any) => {
+        // Normalize aggregated response into TrendReport shape for the chart
+        if (d && 'bucket' in d) {
+          const pts = Array.isArray(d.points) ? d.points : []
+          const fakeReport: TrendReport = {
+            repoUrl: d.repoUrl ?? repoUrl,
+            trend: d.trend ?? 'stable',
+            metricTrends: { overall: d.trend ?? 'stable', modularity: 'stable', coupling: 'stable', smells: 'stable', cycles: 'stable', smellCount: 'stable' },
+            avgScore: pts.length > 0 ? pts.reduce((s: number, p: any) => s + (p.avgOverallScore ?? 0), 0) / pts.length : 0,
+            bestScore: pts.length > 0 ? Math.max(...pts.map((p: any) => p.avgOverallScore ?? 0)) : 0,
+            worstScore: pts.length > 0 ? Math.min(...pts.map((p: any) => p.avgOverallScore ?? 0)) : 0,
+            points: pts.map((p: any, i: number) => ({
+              id: String(i),
+              analyzedAt: p.bucketStart ?? '',
+              overallScore: Math.round(p.avgOverallScore ?? 0),
+              modularityScore: Math.round(p.avgModularityScore ?? 0),
+              couplingScore: Math.round(p.avgCouplingScore ?? 0),
+              smellsScore: Math.round(p.avgSmellsScore ?? 0),
+              cycleCount: Math.round(p.avgCycleCount ?? 0),
+              smellCount: Math.round(p.avgSmellCount ?? 0),
+            })),
+          }
+          setReport(fakeReport)
+        } else if (d && Array.isArray(d.points)) {
+          setReport(d as TrendReport)
+        } else {
+          // Unexpected shape — show empty state instead of crashing
+          setReport(null)
+        }
+      })
       .catch((e: unknown) => setError(String(e)))
       .finally(() => setIsLoading(false))
-  }, [repoUrl, limit, refreshTick])
+  }, [repoUrl, limit, bucket, refreshTick])
 
+  // Refresh only on window focus, throttled to once per 60 seconds
   useEffect(() => {
     if (!repoUrl) return
-    const onFocus = () => setRefreshTick((n) => n + 1)
-    const timer = window.setInterval(() => setRefreshTick((n) => n + 1), 8000)
-    window.addEventListener('focus', onFocus)
-    return () => {
-      window.removeEventListener('focus', onFocus)
-      window.clearInterval(timer)
+    let lastRefresh = Date.now()
+    const onFocus = () => {
+      if (Date.now() - lastRefresh > 60_000) {
+        lastRefresh = Date.now()
+        setRefreshTick((n) => n + 1)
+      }
     }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [repoUrl])
 
   const toggleMetric = (key: MetricKey) => {
@@ -117,7 +156,7 @@ export function TrendChart({ repoUrl, limit, targetScore }: TrendChartProps) {
 
   if (error) return <div className="font-mono text-[12px] text-ra-red py-4">{error}</div>
 
-  if (!report || report.points.length < 2) return (
+  if (!report || !report.points || report.points.length < 2) return (
     <EmptyState message="Not enough history to show a trend yet. Analyze this repo a few more times." />
   )
 
